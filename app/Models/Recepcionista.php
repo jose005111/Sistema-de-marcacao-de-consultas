@@ -12,6 +12,8 @@ class Recepcionista extends Model
         'nascimento',
         'contacto',
         'morada',
+        'sexo',
+        'bi',
         'user_id',
     ];
 }

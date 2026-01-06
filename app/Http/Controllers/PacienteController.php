@@ -49,6 +49,8 @@ public function store(Request $request)
         'nascimento' => 'required|date',
         'morada' => 'required|string',
         'contacto' => 'required|string',
+        'bi' => 'required|string',
+        'sexo' => 'required|string',
     ]);
 
     Paciente::create([
@@ -56,7 +58,9 @@ public function store(Request $request)
         'nascimento' => $request->nascimento,
         'morada' => $request->morada,
         'contacto' => $request->contacto,
-        'user_id' => Auth()->id()
+        'user_id' => Auth()->id(),
+        'bi' => $request->bi,
+        'sexo' => $request->sexo,
     ]);
 
     return back();
@@ -69,6 +73,8 @@ public function update(Request $request)
         'nascimento' => 'required|date',
         'morada' => 'required|string',
         'contacto' => 'required|string',
+        'bi' => 'required|string',
+        'sexo' => 'required|string',
     ]);
 
     $paciente = Paciente::where('user_id', Auth()->id())->firstOrFail();

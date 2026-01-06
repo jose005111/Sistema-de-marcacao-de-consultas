@@ -35,7 +35,7 @@ class RegisterController extends Controller
         $pass = $request->password;
         $request['password'] = Hash::make($request->password);
         $user = User::create($request->all());        
-        $user->assignRole($request->perfil);
+        // $user->assignRole($request->perfil);
         $request['password'] = $pass;
         $credentials = $request->validate([
             "email" => "required|email",

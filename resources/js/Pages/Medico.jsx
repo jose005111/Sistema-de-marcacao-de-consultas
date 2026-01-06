@@ -29,7 +29,9 @@ export default function Medico({ medicos, especialidades }) {
         morada: "",
         contacto: "",
         ordem: "",
-        especialidade_id: ""
+        especialidade_id: "",
+        bi: "",
+        sexo: ""
     });
 
     //Create
@@ -148,7 +150,7 @@ export default function Medico({ medicos, especialidades }) {
                                 key={link.label}
                                 href={link.url}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
+                                className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
                                     }`}
                             />
                         ) : ("")
@@ -181,7 +183,7 @@ export default function Medico({ medicos, especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -193,13 +195,29 @@ export default function Medico({ medicos, especialidades }) {
                                     <form onSubmit={submit} className="flex flex-col space-y-4">
                                         <div>
                                             <label htmlFor="" className="font-bold">Nº de Ordem:</label>
-                                            <input type="text" onChange={(e) => setData("ordem", e.target.value)} className={errors.ordem && "!ring-red-500"} />
+                                            <input type="text" onChange={(e) => setData("ordem", e.target.value)} className={errors.ordem && "!ring-red-500"} required />
                                             {errors.ordem && <p className="error">{errors.ordem}</p>}
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Nome:</label>
-                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} className={errors.nome && "!ring-red-500"} />
+                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} className={errors.nome && "!ring-red-500"}
+                                                required
+                                                maxLength={255}
+                                                pattern="[a-zA-ZÀ-ÿ\s]+" />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
+                                            {errors.bi && <p className="error">{errors.bi}</p>}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="" className="font-bold">Gênero:</label>
+                                            <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
+                                                <option value=""> -- Selecione -- </option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Feminino">Feminino</option>
+                                            </select>
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Especialidade:</label>
@@ -212,8 +230,11 @@ export default function Medico({ medicos, especialidades }) {
                                             </select>
                                         </div>
                                         <div>
+
                                             <label htmlFor="" className="font-bold">Data de Nascimento:</label>
-                                            <input type="date" onChange={(e) => setData("nascimento", e.target.value)} required />
+                                            <input type="date" onChange={(e) => setData("nascimento", e.target.value)} required
+                                                min="1900-01-01"
+                                                max="2100-12-31" />
                                             {errors.nascimento && <p className="error">{errors.nascimento}</p>}
                                         </div>
                                         <div>
@@ -223,7 +244,7 @@ export default function Medico({ medicos, especialidades }) {
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Contacto:</label>
-                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} required />
+                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} required pattern="9\d{8}" />
                                             {errors.contacto && <p className="error">{errors.contacto}</p>}
                                         </div>
                                         <div className="flex justify-end mt-6">
@@ -266,7 +287,7 @@ export default function Medico({ medicos, especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -280,6 +301,19 @@ export default function Medico({ medicos, especialidades }) {
                                             <label htmlFor="" className="font-bold">Nº de Ordem:</label>
                                             <input type="text" onChange={(e) => setData("ordem", e.target.value)} className={errors.ordem && "!ring-red-500"} />
                                             {errors.ordem && <p className="error">{errors.ordem}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
+                                            {errors.bi && <p className="error">{errors.bi}</p>}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="" className="font-bold">Gênero:</label>
+                                            <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
+                                                <option value=""> -- Selecione -- </option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Feminino">Feminino</option>
+                                            </select>
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Nome:</label>
@@ -296,16 +330,16 @@ export default function Medico({ medicos, especialidades }) {
                                                 }
                                             </select>
                                         </div>
-                                        <div>
+                                        {/* <div>
                                             <label htmlFor="" className="font-bold">Morada:</label>
                                             <input type="text" onChange={(e) => setData("morada", e.target.value)} />
                                             {errors.morada && <p className="error">{errors.morada}</p>}
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Contacto:</label>
-                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} />
+                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} required pattern="9\d{8}" />
                                             {errors.contacto && <p className="error">{errors.contacto}</p>}
-                                        </div>
+                                        </div> */}
                                         <div className="flex justify-end mt-6">
                                             <button className="w-full min-h-[40px]  bg-green-500 hover:bg-green-600 rounded-lg text-white p-1" disabled={processing}>  {processing ? (
                                                 <span className="flex items-center justify-center">
@@ -346,7 +380,7 @@ export default function Medico({ medicos, especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between space-x-2 p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -362,8 +396,24 @@ export default function Medico({ medicos, especialidades }) {
                                     </div>
                                     <div>
                                         <label htmlFor="" className="font-bold">Nome:</label>
-                                        <input type="text" onChange={(e) => setData("nome", e.target.value)} value={data.nome} className={errors.nome && "!ring-red-500"} />
+                                        <input type="text" onChange={(e) => setData("nome", e.target.value)} value={data.nome} className={errors.nome && "!ring-red-500"}
+                                            required
+                                            maxLength={255}
+                                            pattern="[a-zA-ZÀ-ÿ\s]+" />
                                         {errors.nome && <p className="error">{errors.nome}</p>}
+                                    </div>
+                                    <div>
+                                        <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                        <input type="text" onChange={(e) => setData("bi", e.target.value)} value={data.bi} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
+                                        {errors.bi && <p className="error">{errors.bi}</p>}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="" className="font-bold">Gênero:</label>
+                                        <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
+                                            <option value=""> -- Selecione -- </option>
+                                            <option value="Masculino">Masculino</option>
+                                            <option value="Feminino">Feminino</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <div>
@@ -377,7 +427,9 @@ export default function Medico({ medicos, especialidades }) {
                                             </select>
                                         </div>
                                         <label htmlFor="" className="font-bold">Data de Nascimento:</label>
-                                        <input type="date" onChange={(e) => setData("nascimento", e.target.value)} value={data.nascimento} required />
+                                        <input type="date" onChange={(e) => setData("nascimento", e.target.value)} value={data.nascimento} required
+                                            min="1900-01-01"
+                                            max="2100-12-31" />
                                         {errors.nascimento && <p className="error">{errors.nascimento}</p>}
                                     </div>
                                     <div>
@@ -387,7 +439,7 @@ export default function Medico({ medicos, especialidades }) {
                                     </div>
                                     <div>
                                         <label htmlFor="" className="font-bold">Contacto:</label>
-                                        <input type="text" onChange={(e) => setData("contacto", e.target.value)} value={data.contacto} required />
+                                        <input type="text" onChange={(e) => setData("contacto", e.target.value)} value={data.contacto} required pattern="9\d{8}" />
                                         {errors.contacto && <p className="error">{errors.contacto}</p>}
                                     </div>
                                     <div className="flex justify-end mt-4">
@@ -429,7 +481,7 @@ export default function Medico({ medicos, especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between space-x-2 p-3  border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -449,6 +501,14 @@ export default function Medico({ medicos, especialidades }) {
                                     <div className="flex justify-between items-center ">
                                         <label htmlFor="" className="font-bold">Nome</label>
                                         <label htmlFor="" className="">{item.nome}</label>
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label htmlFor="" className="font-bold">BI:</label>
+                                        <label htmlFor="" className="">{item.bi}</label>
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label htmlFor="" className="font-bold">Gênero</label>
+                                        <label htmlFor="" className="">{item.sexo}</label>
                                     </div>
                                     <div className="flex justify-between items-center ">
                                         <label htmlFor="" className="font-bold">Data de Nascimento</label>

@@ -17,6 +17,8 @@ return new class extends Migration
             $table->date("nascimento");
             $table->string("morada");
             $table->string("contacto");  
+            $table->string("bi")->unique();  
+            $table->string("sexo");  
             $table->foreignId("user_id")->constrained()->onDelete("cascade");          
             $table->timestamps();
         });

@@ -16,6 +16,8 @@ class Medico extends Model
         'especialidade_id',
         'morada',
         'contacto',
+        'sexo',
+        'bi',
         'user_id',
     ];
 

@@ -22,6 +22,8 @@ export default function Paciente({ pacientes }) {
         nascimento: "",
         morada: "",
         contacto: "",
+        bi: "",
+        sexo: "",
     });
 
     //Create
@@ -127,30 +129,27 @@ export default function Paciente({ pacientes }) {
                                 </td>
                             </tr>
                         ))}
-
+                        {pacientes.data.length == 0 && (
+                            <tr className="text-center">
+                                <td colSpan={6}>Nenhuma paciente registrado!</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
-                <div className="pt-3 px-4">
+                <div className="flex items-center justify-end pt-3 px-4">
                     {pacientes.links.map((link) =>
                         link.url ? (
                             <Link
                                 key={link.label}
                                 href={link.url}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`p-1 mx-1 ${link.active ? "text-blue-500 font-bold" : ""
+                                className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
                                     }`}
                             />
-                        ) : (
-                            <span
-                                key={link.label}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                className="p-1 mx-1 text-slate-300"
-                            ></span>
-                        )
+                        ) : ("")
                     )}
                 </div>
             </div>
-
             {/* Modal Para Adicionar Pacientes */}
             <Transition show={open}>
                 <Dialog onClose={() => setOpen(false)} className="relative z-10">
@@ -165,7 +164,6 @@ export default function Paciente({ pacientes }) {
                     >
                         <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
                     </Transition.Child>
-
                     {/* Painel lateral */}
                     <Transition.Child
                         enter="transition ease-out duration-300 transform"
@@ -176,7 +174,7 @@ export default function Paciente({ pacientes }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -188,8 +186,24 @@ export default function Paciente({ pacientes }) {
                                     <form className="flex flex-col space-y-3" onSubmit={submit}>
                                         <div>
                                             <label className="font-bold" htmlFor="">Nome:</label>
-                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} className={errors.nome && "!ring-red-500"} />
+                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} className={errors.nome && "!ring-red-500"}
+                                                required
+                                                maxLength={255}
+                                                pattern="[a-zA-ZÀ-ÿ\s]+" />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
+                                            {errors.bi && <p className="error">{errors.bi}</p>}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="" className="font-bold">Gênero:</label>
+                                            <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
+                                                <option value=""> -- Selecione -- </option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Feminino">Feminino</option>
+                                            </select>
                                         </div>
                                         <div>
                                             <label className="font-bold" htmlFor="">Data de Nascimento:</label>
@@ -203,7 +217,7 @@ export default function Paciente({ pacientes }) {
                                         </div>
                                         <div>
                                             <label className="font-bold" htmlFor="">Contacto:</label>
-                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} required />
+                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} required pattern="9\d{8}" />
                                             {errors.contacto && <p className="error">{errors.contacto}</p>}
                                         </div>
                                         <div className="flex justify-end mt-6">
@@ -213,7 +227,6 @@ export default function Paciente({ pacientes }) {
                                                 </span>
                                             ) : "Salvar"}</button>
                                         </div>
-
                                     </form>
                                 </div>
                             </div>
@@ -246,34 +259,38 @@ export default function Paciente({ pacientes }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-gray-200">
+                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
-                                <div className="flex items-center justify-between space-x-2 bg-gray-400 text-white p-3">
+                                <div className="flex items-center justify-between p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
-                                        <LiaPlusCircleSolid className="text-2xl" />
                                         <p>Pesquisar Paciente</p>
                                     </DialogTitle>
-                                    <button onClick={() => setOpen(false)} className="bg-rose-500 rounded"> <LiaTimesSolid className="text-2xl" /> </button>
+                                    <button onClick={() => setFilter(false)} className="border  rounded"> <LiaTimesSolid className="text-2xl" /> </button>
                                 </div>
                                 <div className="p-2">
                                     <form onSubmit={search}>
                                         <div>
-                                            <label htmlFor="">Nome:</label>
+                                            <label htmlFor="" className="font-bold">Nome:</label>
                                             <input type="text" onChange={(e) => setData("nome", e.target.value)} className={errors.nome && "!ring-red-500"} />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="">Data de Nascimento:</label>
+                                            <label htmlFor="" className="font-bold">B.I.:</label>
+                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} className={errors.bi && "!ring-red-500"} />
+                                            {errors.bi && <p className="error">{errors.bi}</p>}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="" className="font-bold">Data de Nascimento:</label>
                                             <input type="date" onChange={(e) => setData("nascimento", e.target.value)} required />
                                             {errors.nascimento && <p className="error">{errors.nascimento}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="">Morada:</label>
+                                            <label htmlFor="" className="font-bold">Morada:</label>
                                             <input type="text" onChange={(e) => setData("morada", e.target.value)} required />
                                             {errors.morada && <p className="error">{errors.morada}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="">Contacto:</label>
+                                            <label htmlFor="" className="font-bold">Contacto:</label>
                                             <input type="text" onChange={(e) => setData("contacto", e.target.value)} required />
                                             {errors.contacto && <p className="error">{errors.contacto}</p>}
                                         </div>
@@ -316,39 +333,61 @@ export default function Paciente({ pacientes }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-gray-200">
+                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
-                                <div className="flex items-center justify-between space-x-2 bg-gray-400 text-white p-3">
+                                <div className="flex items-center justify-between space-x-2 p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
-                                        <LiaPlusCircleSolid className="text-2xl" />
                                         <p>Editar dados do Paciente</p>
                                     </DialogTitle>
-                                    <button onClick={() => setEdit(false)} className="bg-rose-500 rounded"> <LiaTimesSolid className="text-2xl" /> </button>
+                                    <button onClick={() => setEdit(false)} className="border rounded"> <LiaTimesSolid className="text-2xl" /> </button>
                                 </div>
                                 <div className="p-2">
                                     <form onSubmit={update}>
                                         <div>
-                                            <label htmlFor="">Nome:</label>
-                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} value={data.nome} className={errors.nome && "!ring-red-500"} />
+                                            <label htmlFor="" className="font-bold">Nome:</label>
+                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} value={data.nome} className={errors.nome && "!ring-red-500"}
+                                                required
+                                                maxLength={255}
+                                                pattern="[a-zA-ZÀ-ÿ\s]+"
+                                            />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="">Data de Nascimento:</label>
+                                            <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} required
+                                                pattern="^\d{9}[A-Z]{2}\d{3}$"
+                                                value={data.bi} />
+                                            {errors.bi && <p className="error">{errors.bi}</p>}
+                                        </div>
+                                        <div>
+                                            <label htmlFor="" className="font-bold">Gênero:</label>
+                                            <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
+                                                <option value=""> -- Selecione -- </option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Feminino">Feminino</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="" className="font-bold">Data de Nascimento:</label>
                                             <input type="date" onChange={(e) => setData("nascimento", e.target.value)} value={data.nascimento} required />
                                             {errors.nascimento && <p className="error">{errors.nascimento}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="">Morada:</label>
+                                            <label htmlFor="" className="font-bold">Morada:</label>
                                             <input type="text" onChange={(e) => setData("morada", e.target.value)} value={data.morada} required />
                                             {errors.morada && <p className="error">{errors.morada}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="">Contacto:</label>
-                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} value={data.contacto} required />
+                                            <label htmlFor="" className="font-bold">Contacto:</label>
+                                            <input type="text" onChange={(e) => setData("contacto", e.target.value)} value={data.contacto} required pattern="9\d{8}" />
                                             {errors.contacto && <p className="error">{errors.contacto}</p>}
                                         </div>
-                                        <div className="flex justify-end mt-2">
-                                            <button className="bg-cyan-500 hover:bg-cyan-600 rounded text-white p-1" disabled={processing}>{processing ? "Salvando..." : "Salvar"}</button>
+                                        <div className="flex justify-end mt-4">
+                                            <button className="w-full min-h-[40px] bg-green-500 hover:bg-green-600 rounded-lg text-white p-1" disabled={processing}>  {processing ? (
+                                                <span className="flex items-center justify-center">
+                                                    <Loader />
+                                                </span>
+                                            ) : "Salvar"}</button>
                                         </div>
 
                                     </form>
@@ -383,41 +422,40 @@ export default function Paciente({ pacientes }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-gray-200">
+                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
-                                <div className="flex items-center justify-between space-x-2 bg-gray-400 text-white p-3">
+                                <div className="flex items-center justify-between space-x-2 p-3  border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
-                                        <LiaUserInjuredSolid className="text-2xl" />
                                         <p>Detalhes do Paciente</p>
                                     </DialogTitle>
-                                    <button onClick={() => setShow(false)} className="bg-rose-500 rounded"> <LiaTimesSolid className="text-2xl" /> </button>
+                                    <button onClick={() => setShow(false)} className="border  rounded"> <LiaTimesSolid className="text-2xl" /> </button>
                                 </div>
-                                <div className="p-2">
-                                    <div>
-                                        <div>
-                                            <label htmlFor="">Nome:</label>
-                                            <input type="text" className={errors.nome && "!ring-red-500"} value={item.nome} disabled />
+                                <div className="flex flex-col space-y-2 mt-4 px-3 rounded">
+                                    <div className="flex justify-between items-center ">
+                                        <label className="font-bold">Nome:</label>
+                                        <label >{item.nome} </label>
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label className="font-bold">B.I.:</label>
+                                        <label >{item.bi} </label>
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label className="font-bold">Gênero:</label>
+                                        <label > {item.sexo}</label>
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label className="font-bold">Data de Nascimento:</label>
+                                        <label > {new Date(item.nascimento).toLocaleDateString()}</label>
 
-                                        </div>
-                                        <div>
-                                            <label htmlFor="">Data de Nascimento:</label>
-                                            <input type="date" value={item.nascimento} disabled />
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label className="font-bold">Morada:</label>
+                                        <label>{item.morada} </label>
 
-                                        </div>
-                                        <div>
-                                            <label htmlFor="">Morada:</label>
-                                            <input type="text" value={item.morada} disabled />
-
-                                        </div>
-                                        <div>
-                                            <label htmlFor="">Contacto:</label>
-                                            <input type="text" value={item.contacto} disabled />
-
-                                        </div>
-                                        <div className="flex justify-end mt-2">
-                                            <button onClick={() => setShow(false)} className="bg-rose-500 hover:bg-rose-600 rounded text-white p-1">Fechar</button>
-                                        </div>
-
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label className="font-bold">Contacto:</label>
+                                        <label>{item.contacto} </label>
                                     </div>
                                 </div>
                             </div>
@@ -427,56 +465,66 @@ export default function Paciente({ pacientes }) {
             </Transition>
             {/* Modal Para Deletar dos Pacientes */}
             <Dialog open={destroier} onClose={setDestroier} className="relative z-10 transition">
-                <DialogBackdrop
-                    transition
-                    className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
-                />
+                {/* Fundo escuro */}
+                <Transition.Child
+                    enter="transition-opacity ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-0"
+                    leave="transition-opacity ease-in duration-200"
+                    leaveFrom="opacity-0"
+                    leaveTo="opacity-0"
+                >
+                    <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
+                </Transition.Child>
 
-                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                        <DialogPanel
-                            transition
-                            className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl outline -outline-offset-1 outline-white/10 transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
-                        >
-                            <div className="">
-                                <div className="flex items-center justify-between bg-rose-500 text-white p-3">
-                                    <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
-                                        <LiaTrashAltSolid className="text-2xl" />
-                                        <p>Deletar Paciente</p>
-                                    </DialogTitle>
-                                    <button onClick={() => setDestroier(false)} className="bg-rose-500 rounded"> <LiaTimesSolid className="text-2xl" /> </button>
-                                </div>
-                                <div className="p-2 bg-rose-100">
-                                    <form onSubmit={destroing}>
-                                        <p className="text-center my-2">Certeza que desejas deletar este registro?</p>
-                                        <div className="flex justify-end mt-2 space-x-2">
-                                            <button className="bg-rose-500 hover:bg-rose-600 rounded text-white p-1">Excluir</button>
-                                        </div>
+                {/* Painel lateral */}
+                <Transition.Child
+                    enter="transition ease-out duration-300 transform"
+                    enterFrom="translate-y-full"
+                    enterTo="translate-y-0"
+                    leave="transition ease-in duration-200 transform"
+                    leaveFrom="translate-y-0"
+                    leaveTo="translate-y-full"
+                >
 
-                                    </form>
+                    <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                            <DialogPanel
+                                transition
+                                className="relative transform overflow-hidden rounded-lg bg-white text-left"
+                            >
+                                <div className="">
+                                    <div className="flex items-center justify-between p-3  border-b">
+                                        <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
+                                            <span className=" bg-rose-500 rounded-full text-white p-1">
+                                                <LiaTrashAltSolid className="text-2xl" />
+                                            </span>
+                                            <p>Deletar Paciente</p>
+                                        </DialogTitle>
+                                        <button onClick={() => setDestroier(false)} className="border rounded"> <LiaTimesSolid className="text-2xl" /> </button>
+                                    </div>
+                                    <div className="p-4 max-w-sm">
+                                        <form onSubmit={destroing}>
+                                            <p className="text-center my-2">Tem certeza que pretende excluir o paciente {item.nome}?</p>
+                                            <p className="text-center text-sm text-gray-600 my-4">Os Registos relacionados a ele serão perdidos!</p>
+                                            <div className="flex justify-end mt-2 space-x-2">
+                                                <button type="button" onClick={() => setDestroier(false)} className="w-full min-h-[40px]  bg-gray-500 hover:bg-gray-600 rounded-lg text-white p-1">Cancelar</button>
+                                                <button className="w-full min-h-[40px]  bg-rose-500 hover:bg-rose-600 rounded-lg text-white p-1" disabled={processing}>{processing ? (
+                                                    <span className="flex items-center justify-center">
+                                                        <Loader />
+                                                    </span>
+                                                ) : "Confirmar"}</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
                                 </div>
-                            </div>
-                        </DialogPanel>
+                            </DialogPanel>
+                        </div>
                     </div>
-                </div>
+
+                </Transition.Child>
             </Dialog>
-
-            {/* <div className="w-1/2 mx-auto">
-                <form onSubmit={submit}>
-                    <textarea
-                        rows="10"
-                        value={data.body}
-                        onChange={(e) => setData("body", e.target.value)}
-                        className={errors.body && "!ring-red-500"}
-                    ></textarea>
-
-                    {errors.body && <p className="error">{errors.body}</p>}
-
-                    <button className="primary-btn mt-4" disabled={processing}>
-                        Create Post
-                    </button>
-                </form>
-            </div> */}
         </div >
     );
 }

@@ -181,7 +181,7 @@ export default function Dashboard({
                         <div className="flex items-center">
                             <label className="block text-sm font-bold text-gray-600 me-1">Ano: </label>
                             <select value={dataPie.ano} onChange={(e) => setDataPie("ano", e.target.value)} className="bg-white">
-                                {Array.from({ length: 5 }, (_, i) => 2025 - i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
+                                {Array.from({ length: 5 }, (_, i) => 2025 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
                             </select>
                         </div>
                         <button className="flex items-center bg-cyan-400 hover:bg-cyan-600 text-white font-semibold px-4 py-2 rounded-md transition-all">
@@ -215,7 +215,7 @@ export default function Dashboard({
                         <div className="flex items-center">
                             <label className="block text-sm font-bold text-gray-600 me-1">Ano: </label>
                             <select value={dataLine.ano} onChange={(e) => setDataLine("ano", e.target.value)} className="bg-white">
-                                {Array.from({ length: 5 }, (_, i) => 2025 - i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
+                                {Array.from({ length: 5 }, (_, i) => 2025 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
                             </select>
                         </div>
                         <button className="flex items-center bg-cyan-400 hover:bg-cyan-600 text-white font-semibold px-4 py-2 rounded-md transition-all">

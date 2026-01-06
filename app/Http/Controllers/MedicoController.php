@@ -61,6 +61,8 @@ public function perfil()
             'contacto' => 'required',
             'morada' => 'required|max:255',
             'contacto' => 'required',
+            'bi' => 'required|string',
+            'sexo' => 'required|string',
             'especialidade_id' => 'required|exists:especialidades,id',
             'user_id' => 'required'
         ]);
@@ -79,7 +81,9 @@ public function perfil()
             'morada' => 'required|max:255',
             'contacto' => 'required',
             'especialidade_id' => 'required|exists:especialidades,id',
-            'user_id' => 'required'
+            'user_id' => 'required',
+            'bi' => 'required|string',
+            'sexo' => 'required|string'
         ]);
         Medico::create($validated);
         return redirect()->back();
@@ -98,6 +102,8 @@ public function perfil()
             'contacto' => 'required',
             'morada' => 'required|max:255',
             'contacto' => 'required',
+            'bi' => 'required|string',
+            'sexo' => 'required|string',
             'especialidade_id' => 'required|exists:especialidades,id',
             'user_id' => 'required' 
         ]);

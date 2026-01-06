@@ -11,25 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('marcacoes', function (Blueprint $table) {
+        Schema::create('vagas', function (Blueprint $table) {
             $table->id();
+
             $table->foreignId('especialidade_id')
                   ->constrained('especialidades')
                   ->onDelete('cascade');
-            $table->foreignId('paciente_id')
-                  ->constrained('pacientes')
-                  ->onDelete('cascade');
 
             $table->date('data');
-            $table->time('hora');
 
-            // Médico é opcional (pode ser atribuído depois)
-            $table->foreignId('medico_id')
-                  ->nullable()
-                  ->constrained('medicos')
-                  ->onDelete('set null');
+            $table->unsignedInteger('total_vagas');
+            $table->unsignedInteger('vagas_disponiveis');
 
             $table->timestamps();
+
+            // Garante apenas uma configuração por especialidade e dia
+            $table->unique(['especialidade_id', 'data']);
         });
     }
 
@@ -38,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('marcacoes');
+        Schema::dropIfExists('vagas');
     }
 };

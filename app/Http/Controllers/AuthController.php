@@ -52,7 +52,7 @@ class AuthController extends Controller
             if ($recep) {
                 return redirect("/dashboard");
             } else {
-                return redirect()->route("recep.perfil");
+                return redirect()->route("recepcionista.perfil");
             }
         }
 
@@ -110,35 +110,40 @@ class AuthController extends Controller
         ]);
     }
 
-    public function adminUpdate(Request $request, string $id){
-        $usuario = User::findOrFail($id);
+   public function adminUpdate(Request $request, string $id)
+{
+    $usuario = User::findOrFail($id);
 
-        if (!Hash::check($request->password, $usuario->password)) {
-            return back()->withErrors(['password' => 'Senha atual incorreta']);
-        }
-
-
-        // VALIDAR CAMPOS
-        $validated = $request->validate([
-            'username' => 'required|max:255|string',
-            'email' => 'required|email|unique:users,email,' . $usuario->id,
-            'nova_password' => 'nullable|min:8',
-            'confirmar_password' => 'same:nova_password'
-        ], [
-            'confirmar_password.same' => 'As senhas não coincidem.'
+    // 🔒 validar senha atual
+    if (!Hash::check($request->password, $usuario->password)) {
+        return back()->withErrors([
+            'password' => 'A senha atual está incorreta.'
         ]);
-
-        // ATUALIZA CAMPOS BÁSICOS
-        $usuario->username = $request->username;
-        $usuario->email = $request->email;
-
-        // SE O USUÁRIO DIGITOU NOVA SENHA
-        if (!empty($request->nova_password)) {
-            $usuario->password = Hash::make($request->nova_password);
-        }
-
-        $usuario->save();
-
-        return back();
     }
+
+    // ✅ validação
+    $validated = $request->validate([
+        'username' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $usuario->id,
+        'nova_password' => 'nullable|min:8',
+        'confirmar_password' => 'same:nova_password',
+    ], [
+        'confirmar_password.same' => 'As senhas não coincidem.',
+        'nova_password.min' => 'A nova senha deve ter pelo menos 8 caracteres.',
+    ]);
+
+    // 🔄 atualizar dados
+    $usuario->username = $validated['username'];
+    $usuario->email = $validated['email'];
+
+    if (!empty($validated['nova_password'])) {
+        $usuario->password = Hash::make($validated['nova_password']);
+    }
+
+    $usuario->save();
+
+    // ✅ flash padronizado
+    return back()->with('success', 'Credenciais atualizadas com sucesso.');
+}
+
 }

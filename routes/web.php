@@ -11,6 +11,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\EspecialidadeController;
 use App\Http\Controllers\MarcacaoController;
 use App\Http\Controllers\RecepcionistaController;
+use App\Http\Controllers\VagaController;
 
 Route::get('/', [DashboardController::class, 'index']);
 Route::get('/dashboard', [DashboardController::class, 'index'])->name("dashboard.index");
@@ -18,12 +19,24 @@ Route::post('/login', [AuthController::class, 'login'])->name("login");
 Route::get('/perfil', [AuthController::class, 'perfil'])->name("perfil");
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::resource('pacientes', PacienteController::class);
+Route::resource('vagas', VagaController::class);
 Route::resource('especialidades', EspecialidadeController::class);
 Route::resource('medicos', MedicoController::class);
 Route::resource('recepcionistas', RecepcionistaController::class);
 Route::resource('usuarios', UsuarioController::class);
 Route::resource('register', RegisterController::class);
 Route::resource('marcacoes', MarcacaoController::class);
+
+Route::get(
+    '/horarios/disponiveis/{vaga}',
+    [MarcacaoController::class, 'horariosDisponiveis']
+)->name('horarios.disponiveis');
+
+
+Route::get('/vagas/disponiveis/{especialidade}', 
+    [VagaController::class, 'disponiveis']
+)->name('vagas.disponiveis');
+
 
 Route::get('/perfil/administrador', [AuthController::class, 'admin'])->name('admin.perfil');
 Route::put('/perfil/administrador/{id}', [AuthController::class, 'adminUpdate'])->name('admin.update');

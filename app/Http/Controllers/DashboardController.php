@@ -33,8 +33,9 @@ class DashboardController extends Controller
                 DB::raw('COUNT(marcacoes.id) as value')
             )
             ->join('especialidades', 'marcacoes.especialidade_id', '=', 'especialidades.id')
-            ->whereMonth('marcacoes.data', $mesSelecionado)
-            ->whereYear('marcacoes.data', $anoSelecionado)
+            ->join('vagas', 'vagas.especialidade_id', '=', 'especialidades.id')
+            ->whereMonth('vagas.data', $mesSelecionado)
+            ->whereYear('vagas.data', $anoSelecionado)
             ->groupBy('especialidades.nome')
             ->orderBy('especialidades.nome')
             ->get()
@@ -49,21 +50,22 @@ class DashboardController extends Controller
         // ==============================
         // 🔹 Gráfico 2: Consultas por Dia do Mês
         // ==============================
-        $consultasPorDia = Marcacao::select(
-                DB::raw('DAY(data) as dia'),
-                DB::raw('COUNT(id) as total')
-            )
-            ->whereMonth('data', $mesSelecionado)
-            ->whereYear('data', $anoSelecionado)
-            ->groupBy(DB::raw('DAY(data)'))
-            ->orderBy(DB::raw('DAY(data)'))
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'dia' => $item->dia,
-                    'total' => $item->total
-                ];
-            });
+       $consultasPorDia = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id')
+    ->select(
+        DB::raw('DAY(vagas.data) as dia'),
+        DB::raw('COUNT(marcacoes.id) as total')
+    )
+    ->whereMonth('vagas.data', $mesSelecionado)
+    ->whereYear('vagas.data', $anoSelecionado)
+    ->groupBy(DB::raw('DAY(vagas.data)'))
+    ->orderBy(DB::raw('DAY(vagas.data)'))
+    ->get()
+    ->map(function ($item) {
+        return [
+            'dia'   => (int) $item->dia,
+            'total' => (int) $item->total,
+        ];
+    });
 
         // 🔹 Renderiza a página
         return Inertia::render('Dashboard', [

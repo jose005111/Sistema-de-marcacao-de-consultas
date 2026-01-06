@@ -182,7 +182,7 @@ export default function Especialidade({ especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -239,7 +239,7 @@ export default function Especialidade({ especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -294,7 +294,7 @@ export default function Especialidade({ especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between space-x-2 p-3 border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -348,7 +348,7 @@ export default function Especialidade({ especialidades }) {
                         leaveTo="translate-x-full"
                     >
                         <DialogPanel
-                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
+                            className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between space-x-2 p-3  border-b">
                                     <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
@@ -416,6 +416,7 @@ export default function Especialidade({ especialidades }) {
                                     <div className="p-2">
                                         <form onSubmit={destroing}>
                                             <p className="text-center my-4">Certeza que desejas deletar esta especialidade?</p>
+                                            <p className="text-center text-sm text-gray-600 my-4">Os Registos relacionados a ele serão perdidos!</p>
                                             <div className="flex mt-2 space-x-2">
                                                 <button type="button" onClick={() => setDestroier(false)} className="w-full bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
                                                     Cancelar

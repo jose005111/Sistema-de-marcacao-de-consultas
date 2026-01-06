@@ -5,16 +5,44 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Recepcionista;
+use Illuminate\Support\Facades\Auth;
 
 class RecepcionistaController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $recepcionistas = Recepcionista::latest()->paginate(10);
-        return inertia('Recepcionista', ['recepcionistas' => $recepcionistas]);
+   public function index(Request $request)
+{
+    $query = Recepcionista::query(); // inicia a query
+
+    // Filtra pelo nome
+    if ($request->filled('nome')) {
+        $query->where('nome', 'like', "%{$request->nome}%");
+    }
+
+    // Filtra pela morada
+    if ($request->filled('morada')) {
+        $query->where('morada', 'like', "%{$request->morada}%");
+    }
+
+    // Filtra pelo contacto
+    if ($request->filled('contacto')) {
+        $query->where('contacto', 'like', "%{$request->contacto}%");
+    }
+
+    // Filtra pela data de nascimento
+    if ($request->filled('nascimento')) {
+        $query->where('nascimento', $request->nascimento); // exato, sem porcentagem
+    }
+
+    // Ordena do mais recente para o mais antigo e pagina
+    $recepcionistas = $query->latest()->paginate(10)->withQueryString();
+
+    return inertia('Recepcionista', [
+        'recepcionistas' => $recepcionistas,
+        'filters' => $request->only(['nome', 'morada', 'contacto', 'nascimento'])
+    ]);
     }
 
     /**
@@ -23,7 +51,8 @@ class RecepcionistaController extends Controller
    public function perfil()
 {
     return Inertia::render('perfil/Recepcionista', [
-        'recepcionista' => Recepcionista::where('user_id', Auth()->id())->first()
+        'recepcionista' => Recepcionista::where('user_id', Auth()->id())->first(),        
+        'usuario' => Auth::user()
     ]);
 }
 
@@ -34,6 +63,8 @@ public function store(Request $request)
         'nascimento' => 'required|date',
         'morada' => 'required|string',
         'contacto' => 'required|string',
+        'bi' => 'required|string',
+        'sexo' => 'required|string',
     ]);
 
     Recepcionista::create([
@@ -41,6 +72,8 @@ public function store(Request $request)
         'nascimento' => $request->nascimento,
         'morada' => $request->morada,
         'contacto' => $request->contacto,
+        'bi' => $request->bi,
+        'sexo' => $request->sexo,
         'user_id' => Auth()->id()
     ]);
 
@@ -54,6 +87,8 @@ public function update(Request $request)
         'nascimento' => 'required|date',
         'morada' => 'required|string',
         'contacto' => 'required|string',
+        'bi' => 'required|string',
+        'sexo' => 'required|string',
     ]);
 
     $recepcionista = Recepcionista::where('user_id', Auth()->id())->firstOrFail();

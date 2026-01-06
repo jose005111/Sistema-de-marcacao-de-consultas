@@ -7,21 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 
 class Marcacao extends Model
 {
-    use HasFactory;
-    protected $table = "Marcacoes";
     protected $fillable = [
         'especialidade_id',
         'paciente_id',
-        'data',
-        'hora'
+        'horario_id',
+        'vaga_id',
     ];
+    protected $table = 'marcacoes';
+    public function vaga()
+    {
+        return $this->belongsTo(Vaga::class);
+    }
+
+    public function paciente()
+    {
+        return $this->belongsTo(Paciente::class);
+    }
 
     public function especialidade()
     {
         return $this->belongsTo(Especialidade::class);
     }
-    public function paciente()
-    {
-        return $this->belongsTo(Paciente::class);
-    }
+    public function horario()
+{
+    return $this->belongsTo(Horario::class);
+}
+
 }

@@ -14,5 +14,7 @@ class Paciente extends Model
         'morada',
         'contacto',
         'user_id',
+        'sexo',
+        'bi',
     ];
 }

@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Vaga;
+use Inertia\Inertia;
+use App\Models\Horario;
 use App\Models\Marcacao;
-use App\Models\Especialidade;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Inertia\Inertia;
+use App\Models\Especialidade;
+use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\Validator;
+
 
 class MarcacaoController extends Controller
 {
@@ -16,17 +20,21 @@ class MarcacaoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Marcacao::with('especialidade', 'paciente')->latest();
+        $query = Marcacao::with(
+            'especialidade',
+            'paciente',
+            'vaga',
+            'horario'
+        )->latest();
+
 
         // 🔍 Filtros opcionais
         if ($request->filled('data')) {
-            $query->whereDate('data', $request->data);
+            $query->whereHas('vaga', function($q) use ($request) {
+            $q->whereDate('data', $request->data);
+        });
         }
-
-        if ($request->filled('hora')) {
-            $query->where('hora', 'like', "%{$request->hora}%");
-        }
-
+      
         if ($request->filled('especialidade_id')) {
             $query->where('especialidade_id', $request->especialidade_id);
         }
@@ -37,11 +45,13 @@ class MarcacaoController extends Controller
         $marcacoes = $query->paginate(10)->appends($request->all());
         $especialidades = Especialidade::all();
         $pacientes = Paciente::all();
+        $vagas = Vaga::all();
 
         return Inertia::render('Marcacao', [
             'marcacoes' => $marcacoes,
             'especialidades' => $especialidades,
             'pacientes' => $pacientes,
+            'vagas' => $vagas,
         ]);
     }
 
@@ -62,29 +72,62 @@ class MarcacaoController extends Controller
     /**
      * Armazena uma nova marcação
      */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'especialidade_id' => 'required|exists:especialidades,id',
-            'paciente_id' => 'required|exists:pacientes,id',
-            'data' => 'required|date|after_or_equal:today',
-            'hora' => 'required|date_format:H:i',
-        ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+public function store(Request $request)
+{
+    // dd($request->all());
+    $request->validate([
+        'especialidade_id' => 'required|exists:especialidades,id',
+        'paciente_id' => 'required|exists:pacientes,id',
+        'vaga_id'     => 'required|exists:vagas,id',
+        'horario_id'  => 'required|exists:horarios,id',
+    ]);
+    
+    DB::transaction(function () use ($request) {
+
+        $vaga = Vaga::findOrFail($request->vaga_id);
+
+        // mesmo paciente + mesma especialidade + mesmo dia
+        $existe = Marcacao::where('paciente_id', $request->paciente_id)
+            ->where('especialidade_id', $vaga->especialidade_id)
+            ->whereHas('vaga', function ($q) use ($vaga) {
+                $q->whereDate('data', $vaga->data);
+            })
+            ->exists();
+
+        if ($existe) {
+        return back()->withErrors([
+            'message' => 'O paciente já possui uma marcação para esta especialidade neste dia.'
+        ]);
+}
+
+
+        // horário ocupado
+        $ocupado = Marcacao::where('vaga_id', $vaga->id)
+            ->where('horario_id', $request->horario_id)
+            ->exists();
+
+        if ($ocupado) {
+            abort(422, 'Este horário já está ocupado.');
         }
 
-        Marcacao::create([
-            'especialidade_id' => $request->especialidade_id,
-            'paciente_id' => $request->paciente_id,
-            'data' => $request->data,
-            'hora' => $request->hora,
+        $marcacao = Marcacao::create([
+            'paciente_id'      => $request->paciente_id,
+            'vaga_id'          => $vaga->id,
+            'horario_id'       => $request->horario_id,
+            'especialidade_id' => $vaga->especialidade_id,
         ]);
+         $marcacao->vaga->decrement('vagas_disponiveis');
+    });
 
-        return redirect()->route('marcacoes.index')
-            ->with('success', 'Consulta marcada com sucesso!');
-    }
+    return back()->with('success', 'Marcação efectuada com sucesso!');
+}
+
+
+
+
+
+
 
     /**
      * Mostra o formulário de edição
@@ -105,36 +148,77 @@ class MarcacaoController extends Controller
     /**
      * Atualiza uma marcação
      */
-    public function update(Request $request, $id)
-    {
-        $marcacao = Marcacao::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'data' => 'nullable|date|after_or_equal:today',
-            'hora' => 'nullable|date_format:H:i',
-            'paciente_id' => 'nullable|exists:pacientes,id',
-            'especialidade_id' => 'nullable|exists:especialidades,id',
-        ]);
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'paciente_id' => 'required|exists:pacientes,id',
+        'vaga_id'     => 'required|exists:vagas,id',
+        'horario_id'  => 'required|exists:horarios,id',
+    ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+    DB::transaction(function () use ($request, $id) {
+
+        $marcacao = Marcacao::lockForUpdate()->findOrFail($id);
+        $novaVaga = Vaga::findOrFail($request->vaga_id);
+
+        // horário ocupado
+        $horarioOcupado = Marcacao::where('vaga_id', $novaVaga->id)
+            ->where('horario_id', $request->horario_id)
+            ->where('id', '!=', $marcacao->id)
+            ->exists();
+
+        if ($horarioOcupado) {
+            abort(422, 'Este horário já está ocupado.');
         }
 
-        $marcacao->update($request->only(['data', 'hora', 'paciente_id', 'especialidade_id']));
+        // ✔ atualizar dados
+        $marcacao->update([
+            'paciente_id'      => $request->paciente_id,
+            'vaga_id'          => $novaVaga->id,
+            'horario_id'       => $request->horario_id,
+            'especialidade_id' => $novaVaga->especialidade_id,
+        ]);
+    });
 
-        return redirect()->route('marcacoes.index')
-            ->with('success', 'Marcação atualizada com sucesso!');
-    }
+    return back()->with('success', 'Marcação atualizada com sucesso!');
+}
+
 
     /**
      * Exclui uma marcação
      */
-    public function destroy($id)
-    {
+   public function destroy($id)
+{
+    DB::transaction(function () use ($id) {
         $marcacao = Marcacao::findOrFail($id);
-        $marcacao->delete();
 
-        return redirect()->route('marcacoes.index')
-            ->with('success', 'Marcação removida com sucesso!');
-    }
+        if ($marcacao->vaga) {
+            $marcacao->vaga->increment('vagas_disponiveis');
+        }
+
+        $marcacao->delete();
+    });
+
+    return redirect()->route('marcacoes.index')
+        ->with('success', 'Marcação removida e vaga liberada!');
+}
+    public function horariosDisponiveis($vagaId)
+{
+    $horarios = Horario::all();
+
+    $ocupados = Marcacao::where('vaga_id', $vagaId)
+        ->pluck('horario_id')
+        ->toArray();
+
+    return $horarios->map(function ($h) use ($ocupados) {
+        return [
+            'id' => $h->id,
+            'hora' => $h->hora,
+            'disponivel' => !in_array($h->id, $ocupados),
+        ];
+    });
+}
+
+
 }

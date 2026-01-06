@@ -52,7 +52,7 @@ class UsuarioController extends Controller
         ]);
         $request['password'] = Hash::make($request->password);
          $user = User::create($validated);        
-        $user->assignRole($request->perfil);
+        // $user->assignRole($request->perfil);
         return redirect()->route('usuarios.index');
     }
 

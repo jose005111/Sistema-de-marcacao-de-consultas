@@ -1,6 +1,6 @@
 import { Link, usePage } from "@inertiajs/react";
 import img from "@/assets/logo.png"
-import { LiaCalendarAltSolid, LiaChartBar, LiaGripLinesSolid, LiaUserCheckSolid, LiaUserInjuredSolid, LiaUserNurseSolid, LiaUserPlusSolid } from "react-icons/lia";
+import { LiaCalendarAltSolid, LiaChartBar, LiaGripLinesSolid, LiaUserCheckSolid, LiaUserInjuredSolid, LiaUserNurseSolid, LiaUserPlusSolid, LiaPlusCircleSolid } from "react-icons/lia";
 export default function Sidebar() {
     const { url } = usePage();
     const isActive = (href) => url.startsWith(href);
@@ -11,7 +11,8 @@ export default function Sidebar() {
         { name: "Recepcionistas", href: "/recepcionistas", icon: LiaUserCheckSolid },
         { name: "Marcações", href: "/marcacoes", icon: LiaCalendarAltSolid },
         { name: "Especialidades", href: "/especialidades", icon: LiaGripLinesSolid },
-        { name: "Usuários", href: "/usuarios", icon: LiaUserPlusSolid }
+        { name: "Usuários", href: "/usuarios", icon: LiaUserPlusSolid },
+        { name: "Vagas", href: "/vagas", icon: LiaPlusCircleSolid }
     ]
     return (
         <div className="sidebar w-64 h-screen bg-cyan-400">
