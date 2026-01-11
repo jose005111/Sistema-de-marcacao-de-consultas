@@ -3,14 +3,21 @@ import "react-toastify/dist/ReactToastify.css";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 import { usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Login from "../Pages/Login";
 import Register from "../Pages/Register";
 
 export default function Layout({ children }) {
     const { auth } = usePage().props;
-    const [login, setLogin] = useState(true);
+    const { flash } = usePage().props
 
+    const [login, setLogin] = useState(true);
+    useEffect(() => {
+        if (flash?.toast) {
+            console.log("toast", flash.toast)
+            toast.success(flash.toast)
+        }
+    }, [flash])
     return (
         <div className="flex min-h-screen bg-gray-100">
             {auth.user === null ? (

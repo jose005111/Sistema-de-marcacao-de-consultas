@@ -153,7 +153,7 @@ export default function Vagas({ vagas, especialidades }) {
 
                         {(!vagas?.data || vagas.data.length === 0) && (
                             <tr>
-                                <td colSpan={4} className="text-center py-4">
+                                <td colSpan={5} className="text-center py-4">
                                     Nenhuma vaga cadastrada.
                                 </td>
                             </tr>

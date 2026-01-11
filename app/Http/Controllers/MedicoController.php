@@ -10,11 +10,13 @@ use Inertia\Inertia;
 
 class MedicoController extends Controller
 {
+   
     /**
      * Display a listing of the resource.
      */
   public function index(Request $request)
 {
+    $this->authorize('viewAny', Medico::class);
     $query = Medico::with('especialidade');
 
     if ($request->filled('ordem')) {
@@ -53,6 +55,7 @@ public function perfil()
 
     public function store(Request $request)
     {
+        $this->authorize('create', Medico::class);
         $request['user_id'] = Auth::user()->id;
         $validated = $request->validate([
             'nome' => 'required|max:255|string',
@@ -95,6 +98,7 @@ public function perfil()
      */
     public function update(Request $request, Medico $medico)
     {
+        $this->authorize('update', $medico);
         $validated = $request->validate([
             'nome' => 'required|max:255|string',
             'ordem' => 'required|unique:medicos,ordem,'.$medico->id,
@@ -135,7 +139,7 @@ public function perfil()
      */
     public function destroy(Medico $medico)
     {
-               
+        $this->authorize('delete', $medico);
         $medico->delete();
         return redirect()->route('medicos.index');
     }

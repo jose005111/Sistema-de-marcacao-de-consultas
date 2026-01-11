@@ -8,12 +8,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PacienteController extends Controller
-{
+{    
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Paciente::class);
         $query = Paciente::latest();
         
         $pacientes  = $query->paginate(10);

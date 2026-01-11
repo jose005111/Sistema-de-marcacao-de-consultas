@@ -6,7 +6,7 @@ import { Dialog, DialogPanel, DialogTitle, Transition } from '@headlessui/react'
 import { toast } from "react-toastify";
 import Loader from "../components/loader";
 
-const perfis = ["Administrador", "Utente", "Medico", "Recepcionista"]
+const perfis = ["admin", "utente", "medico", "recepcionista"]
 
 export default function Usuario({ usuarios }) {
     const route = useRoute()
@@ -20,7 +20,7 @@ export default function Usuario({ usuarios }) {
     let [item, setItem] = useState({
         name: "",
         email: "",
-        perfil: "",
+        role: "",
         password: "12345678",
     })
     const { data, setData, get, post, put, errors, processing, delete: destroy } = useForm({
@@ -123,7 +123,7 @@ export default function Usuario({ usuarios }) {
                             <tr key={usuario.id} className={`${key % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 trasition `}>
                                 <td>{usuario.username}</td>
                                 <td>{usuario.email}</td>
-                                <td>{usuario.perfil}</td>
+                                <td>{usuario.role}</td>
                                 <td className="flex items-center justify-center space-x-2">
                                     <button onClick={() => showUsuario(usuario)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500"><LiaEyeSolid className="text-xl" /></button>
                                     <button onClick={() => editUsuario(usuario)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
@@ -200,8 +200,8 @@ export default function Usuario({ usuarios }) {
                                             {errors.email && <p className="error">{errors.email}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Perfil:</label>
-                                            <select name="" id="" onChange={(e) => setData("perfil", e.target.value)} className="bg-white" >
+                                            <label htmlFor="" className="font-bold">Tipo:</label>
+                                            <select name="" id="" onChange={(e) => setData("role", e.target.value)} className="bg-white" >
                                                 {perfis.map((perfil, key) => (
                                                     <option key={key} value={perfil}>{perfil}</option>
                                                 ))}

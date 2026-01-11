@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\Recepcionista;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
@@ -18,20 +18,12 @@ class RegisterController extends Controller
         // dd("chegiu");
         return inertia('Pacientes');
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {   
+        
         $pass = $request->password;
         $request['password'] = Hash::make($request->password);
         $user = User::create($request->all());        
@@ -50,24 +42,5 @@ class RegisterController extends Controller
             "credenciais" => "As credenciais fornecidas estão incorretas.",
         ]);
         // return redirect()->route('register.index');
-    }
-
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Recepcionista $recepcionista)
-    {
-        $recepcionista->update($request->all());
-        return redirect()->route('recepcionistas.index');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Recepcionista $recepcionista)
-    {
-        $recepcionista->delete();
-        return redirect()->route('recepcionistas.index');
     }
 }

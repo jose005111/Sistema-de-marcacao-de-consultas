@@ -9,11 +9,16 @@ use Illuminate\Support\Facades\Auth;
 
 class RecepcionistaController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth'); // garante que só usuários logados acessem
+    }
     /**
      * Display a listing of the resource.
      */
    public function index(Request $request)
 {
+    $this->authorize('viewAny', Recepcionista::class);
     $query = Recepcionista::query(); // inicia a query
 
     // Filtra pelo nome
@@ -58,6 +63,7 @@ class RecepcionistaController extends Controller
 
 public function store(Request $request)
 {
+    $this->authorize('create', Recepcionista::class);
     $request->validate([
         'nome' => 'required|string',
         'nascimento' => 'required|date',
@@ -82,6 +88,7 @@ public function store(Request $request)
 
 public function update(Request $request)
 {
+    $this->authorize('update', Recepcionista::class);
     $request->validate([
         'nome' => 'required|string',
         'nascimento' => 'required|date',
@@ -111,6 +118,7 @@ public function update(Request $request)
      */
     public function destroy(Recepcionista $recepcionista)
     {
+        $this->authorize('delete', $recepcionista);
         $recepcionista->delete();
         return redirect()->route('recepcionistas.index');
     }

@@ -26,7 +26,7 @@ export default function Header() {
                     href="/perfil">
                     <div className="flex flex-col mx-2">
                         <span className=" text-gray-600 font-bold ">{auth.user.username}</span>
-                        <span className=" text-white text-sm">{auth.user.perfil}</span>
+                        <span className=" text-white text-sm">{auth.user.role}</span>
                     </div>
                 </Link>
             </div>

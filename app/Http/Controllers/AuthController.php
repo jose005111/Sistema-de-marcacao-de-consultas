@@ -30,12 +30,12 @@ class AuthController extends Controller
         $user = Auth::user();
 
         // ADMINISTRADOR
-        if ($user->perfil === "Administrador") {
+        if ($user->role === "admin") {
             return redirect("/dashboard");
         }
 
         // MÉDICO
-        if ($user->perfil === "Medico") {
+        if ($user->role === "medico") {
             $medico = Medico::where("user_id", $user->id)->first();
 
             if ($medico) {
@@ -46,7 +46,7 @@ class AuthController extends Controller
         }
 
         // RECEPCIONISTA
-        if ($user->perfil === "Recepcionista") {
+        if ($user->role === "recepcionista") {
             $recep = Recepcionista::where("user_id", $user->id)->first();
 
             if ($recep) {
@@ -57,7 +57,7 @@ class AuthController extends Controller
         }
 
         // UTENTE
-        if ($user->perfil === "Utente") {
+        if ($user->role === "utente") {
             $utente = Paciente::where("user_id", $user->id)->first();
 
             if ($utente) {
@@ -67,7 +67,7 @@ class AuthController extends Controller
             }
         }
 
-        return redirect()->route("login");
+        return redirect()->route("/");
     }
 
 
@@ -84,22 +84,22 @@ class AuthController extends Controller
          $user = Auth::user();
 
         // ADMINISTRADOR
-        if ($user->perfil === "Administrador") {
+        if ($user->role === "admin") {
             return redirect()->route("admin.perfil");
         }
 
         // MÉDICO
-        if ($user->perfil === "Medico") {
+        if ($user->role === "medico") {
             return redirect()->route("medico.perfil");
         }
 
         // RECEPCIONISTA
-        if ($user->perfil === "Recepcionista") {
+        if ($user->role === "recepcionista") {
             return redirect()->route("recepcionista.perfil");
         }
 
         // UTENTE
-        if ($user->perfil === "Utente") {
+        if ($user->role === "utente") {
             return redirect()->route("utente.perfil");
           
         }

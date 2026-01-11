@@ -15,7 +15,7 @@ export default function Register({ action }) {
         email: "",
         password: "",
         confirmPassword: "",
-        perfil: "Utente"
+        role: "utente"
     })
 
     function submit(e) {

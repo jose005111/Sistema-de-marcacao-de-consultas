@@ -16,6 +16,7 @@ import Loader from "../components/loader";
 export default function Marcacao({ marcacoes, especialidades, pacientes }) {
     const route = useRoute();
     const { flash } = usePage().props;
+    const { auth } = usePage().props;
     const { component } = usePage();
     const [vagas, setVagas] = useState([]);
     const [open, setOpen] = useState(false);
@@ -46,7 +47,7 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
 
     const { data, setData, post, put, get, delete: destroy, errors, processing, reset } = useForm({
         especialidade_id: "",
-        paciente_id: "",
+        paciente_id: auth.user.role === 'utente' ? auth.user.paciente.id : "",
         vaga_id: "",
         horario_id: "",
     });
@@ -207,12 +208,12 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                         </DialogTitle>
 
                         <form onSubmit={edit ? () => put(route("marcacoes.update", item.id)) : submit} className="space-y-4">
-
-                            <select value={data.paciente_id} onChange={e => setData("paciente_id", e.target.value)} className="input">
-                                <option value="">Paciente</option>
-                                {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-                            </select>
-
+                            {auth.user.role !== 'utente' && (
+                                <select value={data.paciente_id} onChange={e => setData("paciente_id", e.target.value)} className="input">
+                                    <option value="">Paciente</option>
+                                    {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+                                </select>
+                            )}
                             <select value={data.especialidade_id} onChange={e => {
                                 setData("especialidade_id", e.target.value);
                                 carregarVagas(e.target.value);
@@ -284,19 +285,21 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                             className="flex flex-col space-y-4"
                         >
                             {/* Paciente */}
-                            <div>
-                                <label className="font-bold">Paciente</label>
-                                <select
-                                    value={data.paciente_id}
-                                    onChange={(e) => setData('paciente_id', e.target.value)}
-                                    className="w-full border rounded p-2"
-                                >
-                                    <option value="">-- Selecione --</option>
-                                    {pacientes.map(p => (
-                                        <option key={p.id} value={p.id}>{p.nome}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {auth.user.role !== 'utente' && (
+                                <div>
+                                    <label className="font-bold">Paciente</label>
+                                    <select
+                                        value={data.paciente_id}
+                                        onChange={(e) => setData('paciente_id', e.target.value)}
+                                        className="w-full border rounded p-2"
+                                    >
+                                        <option value="">-- Selecione --</option>
+                                        {pacientes.map(p => (
+                                            <option key={p.id} value={p.id}>{p.nome}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             {/* Especialidade */}
                             <div>

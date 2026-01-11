@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'jose@example.com'], // condição
             [
                 'username' => 'Jose Alberto',
-                'perfil' => 'Administrador',
+                'role' => 'admin',
                 'password' => Hash::make('12345678'),
             ]
         );

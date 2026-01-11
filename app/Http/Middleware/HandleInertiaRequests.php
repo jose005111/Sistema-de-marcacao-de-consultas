@@ -39,7 +39,20 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'message' => fn () => $request->session()->get('message'),
                 'success' => fn () => $request->session()->get('success'),
+                 'toast' => fn () => $request->session()->get('toast'),
             ],
+            'auth' => [
+            'user' => $request->user(),
+            'can' => $request->user() ? [
+                'viewUsuarios'        => $request->user()->can('viewAny', \App\Models\User::class),
+                'viewPacientes'       => $request->user()->can('viewAny', \App\Models\Paciente::class),
+                'viewMedicos'         => $request->user()->can('viewAny', \App\Models\Medico::class),
+                'viewRecepcionistas'  => $request->user()->can('viewAny', \App\Models\Recepcionista::class),
+                'viewEspecialidades'  => $request->user()->can('viewAny', \App\Models\Especialidade::class),
+                'viewVagas'           => $request->user()->can('viewAny', \App\Models\Vaga::class),
+                'viewMarcacoes'       => $request->user()->can('viewAny', \App\Models\Marcacao::class),
+            ] : [],
+        ],
         ]);
     }
 }

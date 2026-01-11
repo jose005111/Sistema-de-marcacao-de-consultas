@@ -9,7 +9,6 @@
         "inertiajs/inertia-laravel": "^1.2",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
-        "spatie/laravel-permission": "^6.23",
         "tightenco/ziggy": "^2.2"
     },
     "require-dev": {

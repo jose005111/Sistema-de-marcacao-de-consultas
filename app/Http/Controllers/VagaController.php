@@ -14,23 +14,25 @@ class VagaController extends Controller
     /**
      * Lista as vagas
      */
-    public function index(Request $request)
-    {
-        // dd(123);
-        $vagas = Vaga::with('especialidade')
-            ->when($request->filled('data'), fn ($q) =>
-                $q->whereDate('data', $request->data)
-            )
-            ->latest()
-            ->paginate(10)
-            ->appends($request->all());
+  public function index(Request $request)
+{
+    $this->authorize('viewAny', Vaga::class);
 
-            // dd($vagas);
-        return Inertia::render('Vagas', [
-            'vagas' => $vagas,
-            'especialidades' => Especialidade::all(),
-        ]);
-    }
+    $vagas = Vaga::with('especialidade')
+        ->whereDate('data', '>=', now()->toDateString()) // 👈 filtro principal
+        ->when($request->filled('data'), fn ($q) =>
+            $q->whereDate('data', $request->data)
+        )
+        ->latest()
+        ->paginate(10)
+        ->appends($request->all());
+
+    return Inertia::render('Vagas', [
+        'vagas' => $vagas,
+        'especialidades' => Especialidade::all(),
+    ]);
+}
+
 public function disponiveis($especialidade)
 {
     return Vaga::where('especialidade_id', $especialidade)
@@ -54,6 +56,7 @@ public function disponiveis($especialidade)
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Vaga::class);
         $validator = Validator::make($request->all(), [
             'data' => 'required|date|after_or_equal:today',
             'vagas' => 'required|array|min:1',
@@ -88,6 +91,7 @@ public function disponiveis($especialidade)
 
 public function update(Request $request, Vaga $vaga)
 {
+    $this->authorize('update', $vaga);
     $validator = Validator::make($request->all(), [
         'data' => 'required|date|after_or_equal:today',
         'total_vagas' => 'required|integer|min:1',
@@ -128,6 +132,7 @@ public function update(Request $request, Vaga $vaga)
 
     public function destroy(Vaga $vaga)
 {
+    $this->authorize('delete', $vaga);
     if ($vaga->vagas_disponiveis < $vaga->total_vagas) {
         return back()->withErrors([
             'message' => 'Não é possível eliminar esta vaga porque já existem marcações associadas.'

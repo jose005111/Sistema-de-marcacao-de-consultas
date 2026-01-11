@@ -14,6 +14,7 @@ class UsuarioController extends Controller
      */
   public function index(Request $request)
 {
+    $this->authorize('viewAny', User::class);
     $query = User::latest();
 
 
@@ -43,16 +44,17 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', User::class);
         // dd($request->all());
         $validated = $request->validate([
             'username' => 'required|max:255|string',
             'email' => 'required|email|unique:users,email',
-            'perfil' => 'required',
+            'role' => 'required',
             'password' => 'required|min:8'
         ]);
         $request['password'] = Hash::make($request->password);
          $user = User::create($validated);        
-        // $user->assignRole($request->perfil);
+        // $user->assignRole($request->role);
         return redirect()->route('usuarios.index');
     }
 
@@ -62,10 +64,11 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, User $usuario)
     {
+        $this->authorize('update', $usuario);
         $validated = $request->validate([
             'username' => 'required|max:255|string',
             'email' => 'required|email|unique:users,email,' .$usuario->id,
-            'perfil' => 'required',
+            'role' => 'required',
             // 'password' => 'required|min:8'
         ]);
         
@@ -78,7 +81,8 @@ class UsuarioController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(User $usuario)
-    {               
+    {      
+        $this->authorize('delete', $usuario);         
         $usuario->delete();
         return redirect()->route('usuarios.index');
     }

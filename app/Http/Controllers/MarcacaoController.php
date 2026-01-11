@@ -10,51 +10,61 @@ use App\Models\Paciente;
 use Illuminate\Http\Request;
 use App\Models\Especialidade;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 // use Illuminate\Support\Facades\Validator;
 
 
 class MarcacaoController extends Controller
 {
-    /**
+     /**
      * Lista as marcações (com filtro e paginação)
      */
-    public function index(Request $request)
-    {
-        $query = Marcacao::with(
-            'especialidade',
-            'paciente',
-            'vaga',
-            'horario'
-        )->latest();
+   public function index(Request $request)
+{
+    $this->authorize('viewAny', Marcacao::class);
 
+    $user = Auth::user();
 
-        // 🔍 Filtros opcionais
-        if ($request->filled('data')) {
-            $query->whereHas('vaga', function($q) use ($request) {
-            $q->whereDate('data', $request->data);
-        });
-        }
-      
-        if ($request->filled('especialidade_id')) {
-            $query->where('especialidade_id', $request->especialidade_id);
-        }
-        if ($request->filled('paciente_id')) {
-            $query->where('paciente_id', $request->paciente_id);
-        }
+    $query = Marcacao::with(
+        'especialidade',
+        'paciente',
+        'vaga',
+        'horario'
+    )->latest();
 
-        $marcacoes = $query->paginate(10)->appends($request->all());
-        $especialidades = Especialidade::all();
-        $pacientes = Paciente::all();
-        $vagas = Vaga::all();
-
-        return Inertia::render('Marcacao', [
-            'marcacoes' => $marcacoes,
-            'especialidades' => $especialidades,
-            'pacientes' => $pacientes,
-            'vagas' => $vagas,
-        ]);
+    /**
+     * 🔒 Se for UTENTE, ver apenas as suas marcações
+     */
+    if ($user->role === 'utente') {
+        $query->where('paciente_id', $user->paciente->id);
     }
 
+    // 🔍 Filtros opcionais
+    if ($request->filled('data')) {
+        $query->whereHas('vaga', function ($q) use ($request) {
+            $q->whereDate('data', $request->data);
+        });
+    }
+
+    if ($request->filled('especialidade_id')) {
+        $query->where('especialidade_id', $request->especialidade_id);
+    }
+
+    if ($request->filled('paciente_id') && $user->tipo !== 'utente') {
+        $query->where('paciente_id', $request->paciente_id);
+    }
+
+    $marcacoes = $query->paginate(10)->appends($request->all());
+
+    return Inertia::render('Marcacao', [
+        'marcacoes' => $marcacoes,
+        'especialidades' => Especialidade::all(),
+        'pacientes' => $user->tipo === 'utente'
+            ? []
+            : Paciente::all(),
+        'vagas' => Vaga::all(),
+    ]);
+}
     /**
      * Mostra o formulário de criação
      */
@@ -75,6 +85,7 @@ class MarcacaoController extends Controller
 
 public function store(Request $request)
 {
+       $this->authorize('create', Marcacao::class);
     // dd($request->all());
     $request->validate([
         'especialidade_id' => 'required|exists:especialidades,id',
@@ -160,6 +171,8 @@ public function update(Request $request, $id)
     DB::transaction(function () use ($request, $id) {
 
         $marcacao = Marcacao::lockForUpdate()->findOrFail($id);
+        
+    $this->authorize('update', $marcacao);
         $novaVaga = Vaga::findOrFail($request->vaga_id);
 
         // horário ocupado
@@ -190,9 +203,12 @@ public function update(Request $request, $id)
      */
    public function destroy($id)
 {
+    
+
     DB::transaction(function () use ($id) {
         $marcacao = Marcacao::findOrFail($id);
 
+    $this->authorize('delete', $marcacao);
         if ($marcacao->vaga) {
             $marcacao->vaga->increment('vagas_disponiveis');
         }
