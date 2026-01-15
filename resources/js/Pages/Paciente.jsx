@@ -205,6 +205,7 @@ export default function Paciente({ pacientes }) {
                                                 <option value="Feminino">Feminino</option>
                                             </select>
                                         </div>
+
                                         <div>
                                             <label className="font-bold" htmlFor="">Data de Nascimento:</label>
                                             <input type="date" onChange={(e) => setData("nascimento", e.target.value)} required />

@@ -110,7 +110,7 @@ export default function Recepcionista({ recepcionista, usuario }) {
                         onClick={() => setOpenPerfil(true)}
                         className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded"
                     >
-                        Editar Perfil
+                        {recepcionista ? "Editar Perfil" : "Criar Perfil"}
                     </button>
 
                     <button
@@ -153,6 +153,8 @@ export default function Recepcionista({ recepcionista, usuario }) {
                         value={data.nome}
                         onChange={e => setData("nome", e.target.value)}
                         required
+                        maxLength={255}
+                        pattern="[a-zA-ZÀ-ÿ\s]+"
                     />
 
                     <Input

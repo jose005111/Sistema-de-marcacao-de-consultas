@@ -18,7 +18,7 @@ export default function Usuario({ usuarios }) {
     const [filter, setFilter] = useState(false)
     const [destroier, setDestroier] = useState(false)
     let [item, setItem] = useState({
-        name: "",
+        username: "",
         email: "",
         role: "",
         password: "12345678",
@@ -26,23 +26,25 @@ export default function Usuario({ usuarios }) {
     const { data, setData, get, post, put, errors, processing, delete: destroy } = useForm({
         username: "",
         email: "",
-        perfil: "",
+        role: "",
         password: "12345678",
     });
 
     //Create
     function submit(e) {
         e.preventDefault();
-        post("/usuarios", { data: { ...data, password: "12345678" } }, {
+
+        post("/usuarios", {
             onSuccess: () => {
-                setOpen(false)
-                toast.success("Usuário adicionado Com Sucesso!")
+                setOpen(false);
+                toast.success("Usuário adicionado com sucesso!");
             },
             onError: () => {
-                toast.error("Usuário adicionado Com Sucesso!")
+                toast.error("Erro ao adicionar usuário!");
             }
         });
     }
+
     //Create
     function search(e) {
         e.preventDefault();
@@ -114,7 +116,7 @@ export default function Usuario({ usuarios }) {
                         <tr className="bg-gray-100 text-gray-700 uppercase text-xs tracking-winder">
                             <td>Username</td>
                             <td>Email</td>
-                            <td>Perfil</td>
+                            <td>Tipo</td>
                             <td className="text-center">Acções</td>
                         </tr>
                     </thead>
@@ -338,7 +340,7 @@ export default function Usuario({ usuarios }) {
                                     </div>
                                     <div>
                                         <label htmlFor="" className="font-bold">Perfil:</label>
-                                        <select name="" id="" value={data.perfil} onChange={(e) => setData("perfil", e.target.value)} className="bg-white" >
+                                        <select name="" id="" value={data.role} onChange={(e) => setData("role", e.target.value)} className="bg-white" >
                                             {perfis.map((perfil, key) => (
                                                 <option key={key} value={perfil}>{perfil}</option>
                                             ))}
@@ -403,7 +405,7 @@ export default function Usuario({ usuarios }) {
                                     </div>
                                     <div className="flex justify-between items-center ">
                                         <label htmlFor="" className="font-bold">Perfil</label>
-                                        <label htmlFor="" className="">{item.perfil}</label>
+                                        <label htmlFor="" className="">{item.role}</label>
                                     </div>
                                 </div>
                             </div>

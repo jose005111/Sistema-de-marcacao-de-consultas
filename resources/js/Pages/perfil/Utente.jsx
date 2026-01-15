@@ -128,7 +128,7 @@ export default function Utente({ paciente, usuario }) {
                         onClick={() => setOpenPerfil(true)}
                         className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-2 rounded"
                     >
-                        Editar Perfil
+                        {paciente ? "Editar Perfil" : "Criar Perfil"}
                     </button>
 
                     <button
@@ -197,6 +197,7 @@ export default function Utente({ paciente, usuario }) {
                                 <input className="w-full border p-2 rounded"
                                     value={data.nome}
                                     onChange={e => setData("nome", e.target.value)}
+                                    required
                                     placeholder="Nome"
                                 />
                                 {errors.nome && <p className="text-red-500 text-sm">{errors.nome}</p>}
@@ -205,12 +206,14 @@ export default function Utente({ paciente, usuario }) {
                                     value={data.bi}
                                     onChange={e => setData("bi", e.target.value)}
                                     pattern="^\d{9}[A-Za-z]{2}\d{3}$"
+                                    required
                                     placeholder="BI"
                                 />
 
                                 <select
                                     className="w-full border p-2 rounded"
                                     value={data.sexo}
+                                    required
                                     onChange={e => setData("sexo", e.target.value)}
                                 >
                                     <option value="">Selecione o gênero</option>
@@ -220,17 +223,19 @@ export default function Utente({ paciente, usuario }) {
 
                                 <input type="date" className="w-full border p-2 rounded"
                                     value={data.nascimento}
+                                    required
                                     onChange={e => setData("nascimento", e.target.value)}
                                 />
 
                                 <input className="w-full border p-2 rounded"
                                     value={data.contacto}
                                     onChange={e => setData("contacto", e.target.value)}
-                                    placeholder="Contacto"
+                                    placeholder="Contacto" required pattern="9\d{8}"
                                 />
 
                                 <input className="w-full border p-2 rounded"
                                     value={data.morada}
+                                    required
                                     onChange={e => setData("morada", e.target.value)}
                                     placeholder="Morada"
                                 />

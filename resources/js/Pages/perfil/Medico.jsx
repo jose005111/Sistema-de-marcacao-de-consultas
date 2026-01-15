@@ -151,15 +151,18 @@ export default function Medico({ especialidades, medico, usuario }) {
             >
                 <form onSubmit={submitPerfil} className="space-y-3">
                     <Input value={data.ordem} onChange={e => setData("ordem", e.target.value)} placeholder="Nº Ordem" />
-                    <Input value={data.nome} onChange={e => setData("nome", e.target.value)} placeholder="Nome" />
-                    <Input value={data.bi} onChange={e => setData("bi", e.target.value)} placeholder="BI" />
+                    <Input value={data.nome} onChange={e => setData("nome", e.target.value)} placeholder="Nome"
+                        required
+                        maxLength={255}
+                        pattern="[a-zA-ZÀ-ÿ\s]+" />
+                    <Input value={data.bi} onChange={e => setData("bi", e.target.value)} placeholder="BI" required pattern="^\d{9}[A-Z]{2}\d{3}$" />
                     <Select value={data.sexo} onChange={e => setData("sexo", e.target.value)}>
                         <option value="">Gênero</option>
                         <option>Masculino</option>
                         <option>Feminino</option>
                     </Select>
                     <Input type="date" value={data.nascimento} onChange={e => setData("nascimento", e.target.value)} />
-                    <Input value={data.contacto} onChange={e => setData("contacto", e.target.value)} placeholder="Contacto" />
+                    <Input value={data.contacto} onChange={e => setData("contacto", e.target.value)} placeholder="Contacto" required pattern="9\d{8}" />
                     <Input value={data.morada} onChange={e => setData("morada", e.target.value)} placeholder="Morada" />
 
                     <Select value={data.especialidade_id} onChange={e => setData("especialidade_id", e.target.value)}>

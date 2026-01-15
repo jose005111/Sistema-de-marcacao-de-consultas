@@ -26,8 +26,8 @@ class UsuarioController extends Controller
         $query->Where('email', 'like', "%{$request->email}%");  
     }
 
-    if ($request->filled('perfil')) {
-        $query->Where('perfil', 'like', "%{$request->perfil}%");
+    if ($request->filled('role')) {
+        $query->Where('role', 'like', "%{$request->role}%");
     }
 
     $usuarios = $query->paginate(10);
