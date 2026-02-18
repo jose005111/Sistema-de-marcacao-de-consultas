@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
     {
         // Criar usuário apenas se não existir
         User::firstOrCreate(
-            ['email' => 'jose@example.com'], // condição
+            ['email' => 'admin@example.com'], // condição
             [
-                'username' => 'Jose Alberto',
+                'username' => 'Administrador',
                 'role' => 'admin',
                 'password' => Hash::make('12345678'),
             ]

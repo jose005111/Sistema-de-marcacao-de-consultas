@@ -15,7 +15,7 @@ class UsuarioController extends Controller
   public function index(Request $request)
 {
     $this->authorize('viewAny', User::class);
-    $query = User::latest();
+    $query = User::with('medico', 'paciente', 'recepcionista')->latest();
 
 
     if ($request->filled('nome')) {

@@ -14,16 +14,22 @@ class VagaController extends Controller
     /**
      * Lista as vagas
      */
-  public function index(Request $request)
+ public function index(Request $request)
 {
     $this->authorize('viewAny', Vaga::class);
 
-    $vagas = Vaga::with('especialidade')
-        ->whereDate('data', '>=', now()->toDateString()) // 👈 filtro principal
+    $vagas = Vaga::select(
+            'especialidade_id',
+            DB::raw('SUM(total_vagas) as total_vagas'),
+            DB::raw('SUM(vagas_disponiveis) as vagas_disponiveis'),
+            DB::raw('MIN(data) as data') // opcional, se quiser mostrar uma data
+        )
+        ->with('especialidade')
+        ->whereDate('data', '>=', now()->toDateString())
         ->when($request->filled('data'), fn ($q) =>
             $q->whereDate('data', $request->data)
         )
-        ->latest()
+        ->groupBy('especialidade_id')
         ->paginate(10)
         ->appends($request->all());
 
@@ -32,6 +38,23 @@ class VagaController extends Controller
         'especialidades' => Especialidade::all(),
     ]);
 }
+
+public function detalhes($especialidadeId)
+{
+    $vagas = Vaga::where('especialidade_id', $especialidadeId)
+        ->whereDate('data', '>=', now()->toDateString())
+        ->select(
+            'data',
+            DB::raw('SUM(total_vagas) as total_vagas'),
+            DB::raw('SUM(vagas_disponiveis) as vagas_disponiveis')
+        )
+        ->groupBy('data')
+        ->orderBy('data')
+        ->get();
+
+    return response()->json($vagas);
+}
+
 
 public function disponiveis($especialidade)
 {

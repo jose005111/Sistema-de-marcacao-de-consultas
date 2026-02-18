@@ -1,27 +1,36 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\MedicoController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\PacienteController;
-use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\EspecialidadeController;
 use App\Http\Controllers\MarcacaoController;
+use App\Http\Controllers\MedicoController;
+use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\RecepcionistaController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\VagaController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // -------------------- PUBLIC --------------------
-Route::get('/', [DashboardController::class, 'index']);
-Route::get('/dashboard', [DashboardController::class, 'index'])->name("dashboard.index");
-Route::post('/login', [AuthController::class, 'login'])->name("login");
+Route::get('/login', function () {
+    return Inertia::render('Login');
+})->name('home');
+Route::get('/', function () {
+    return Inertia::render('Login');
+})->name('home');
+
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout']);
 Route::resource('register', RegisterController::class)->only(['index', 'store']);
 
 // -------------------- AUTHENTICATED --------------------
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name("dashboard.index");
+Route::get('/vagas/{especialidade}/detalhes', 
+    [VagaController::class, 'detalhes']
+)->name('vagas.detalhes');
 
     // Perfis
     Route::get('/perfil', [AuthController::class, 'perfil'])->name("perfil");
@@ -75,4 +84,22 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/vagas/disponiveis/{especialidade}', [VagaController::class, 'disponiveis'])
         ->name('vagas.disponiveis');
+
+    Route::get('/medicos/por-especialidade/{especialidade}', [MedicoController::class, 'medicosPorEspecialidade'])->name('medicos.por-especialidade');
+    
+
+    Route::patch('/medicos/{medico}/estado', 
+    [MedicoController::class, 'changeState']
+)->name('medicos.changeState');
+
+Route::get('/marcacoes/{marcacao}/imprimir', 
+    [MarcacaoController::class, 'imprimir']
+)->name('marcacoes.imprimir');
+
+
+Route::patch('/marcacoes/{marcacao}/realizada', [MarcacaoController::class, 'marcarRealizada'])
+    ->name('marcacoes.realizada');
+
+
+
 });

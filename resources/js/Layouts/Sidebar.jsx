@@ -10,12 +10,14 @@ import {
     LiaUserPlusSolid,
     LiaPlusCircleSolid
 } from "react-icons/lia";
+import { AiFillAlert } from "react-icons/ai";
 
 export default function Sidebar() {
     const { url, props } = usePage();
     const can = props.auth?.can || {};
-
+    const { auth } = usePage().props;
     const isActive = (href) => url.startsWith(href);
+    const habilitar = (auth.user.role === 'admin') || auth.user.perfil.completo;
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: LiaChartBar, show: true },
@@ -34,13 +36,12 @@ export default function Sidebar() {
             <div className="flex items-center justify-center bg-white p-2 border-b">
                 <img src={img} alt="logo" />
             </div>
-
             {links
                 .filter(link => link.show)
                 .map(link => (
                     <div className="mx-1" key={link.href}>
                         <Link
-                            href={link.href}
+                            href={habilitar ? link.href : "#"}
                             className={`flex items-center rounded p-3 hover:bg-cyan-200 mt-1
                                 ${isActive(link.href) ? "bg-cyan-200" : ""}`}
                         >
@@ -50,6 +51,12 @@ export default function Sidebar() {
                     </div>
                 ))
             }
+            {habilitar ? "" : <div className="flex justify-center my-2">
+                <span className="bg-red-200 border rounded-full px-2 py-1 text-sm text-red-600">
+                    <AiFillAlert className="inline-block mr-1" />
+                    completar perfil para acessar</span>
+            </div>}
+
         </div>
     );
 }

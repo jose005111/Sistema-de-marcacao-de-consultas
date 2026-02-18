@@ -1,3 +1,4 @@
+import { router } from "@inertiajs/react";
 import { Head, useForm, usePage, Link } from "@inertiajs/react";
 import { LiaEditSolid, LiaEyeSolid, LiaFilterSolid, LiaTimesSolid, LiaTrashAltSolid, LiaUserInjuredSolid, LiaUserPlusSolid } from "react-icons/lia";
 import { useRoute } from "../../../vendor/tightenco/ziggy/src/js";
@@ -17,17 +18,25 @@ export default function Usuario({ usuarios }) {
     const [edit, setEdit] = useState(false)
     const [filter, setFilter] = useState(false)
     const [destroier, setDestroier] = useState(false)
+
     let [item, setItem] = useState({
         username: "",
         email: "",
         role: "",
         password: "12345678",
     })
+
     const { data, setData, get, post, put, errors, processing, delete: destroy } = useForm({
         username: "",
         email: "",
         role: "",
         password: "12345678",
+    });
+
+    const { s, setData: setS, get: getSearch } = useForm({
+        username: "",
+        email: "",
+        role: "",
     });
 
     //Create
@@ -48,7 +57,7 @@ export default function Usuario({ usuarios }) {
     //Create
     function search(e) {
         e.preventDefault();
-        get(route("usuarios.index", data));
+        getSearch(route("usuarios.index", s));
     }
     //destroier
     function destroing(e) {
@@ -142,19 +151,22 @@ export default function Usuario({ usuarios }) {
                     </tbody>
                 </table>
             </div>
-            <div className="flex items-center justify-end pt-3 px-4">
-                {usuarios.links.map((link) =>
-                    link.url ? (
-                        <Link
-                            key={link.label}
-                            href={link.url}
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                            className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
-                                }`}
-                        />
-                    ) : ("")
-                )}
-            </div>
+            {usuarios.data.length > 10 && (
+                <div className="flex items-center justify-end pt-3 px-4">
+
+                    {usuarios.links.map((link) =>
+                        link.url ? (
+                            <Link
+                                key={link.label}
+                                href={link.url}
+                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
+                                    }`}
+                            />
+                        ) : ("")
+                    )}
+                </div>
+            )}
 
             {/* Modal Para Adicionar usuarios */}
             <Transition show={open}>
@@ -262,17 +274,18 @@ export default function Usuario({ usuarios }) {
                                     <form onSubmit={search} className="flex flex-col space-y-4">
                                         <div>
                                             <label htmlFor="" className="font-bold">Username:</label>
-                                            <input type="text" onChange={(e) => setData("username", e.target.value)} className={errors.username && "!ring-red-500"} />
+                                            <input type="text" onChange={(e) => setS("username", e.target.value)} className={errors.username && "!ring-red-500"} />
                                             {errors.username && <p className="error">{errors.username}</p>}
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Email:</label>
-                                            <input type="email" onChange={(e) => setData("email", e.target.value)} />
+                                            <input type="email" onChange={(e) => setS("email", e.target.value)} />
                                             {errors.email && <p className="error">{errors.email}</p>}
                                         </div>
                                         <div>
                                             <label htmlFor="" className="font-bold">Perfil:</label>
-                                            <select name="" id="" onChange={(e) => setData("perfil", e.target.value)} className="bg-white" >
+                                            <select name="" id="" onChange={(e) => setS("role", e.target.value)} className="bg-white" >
+                                                <option value="">Todos</option>
                                                 {perfis.map((perfil, key) => (
                                                     <option key={key} value={perfil}>{perfil}</option>
                                                 ))}
@@ -361,7 +374,7 @@ export default function Usuario({ usuarios }) {
                     </Transition.Child>
                 </Dialog>
             </Transition>
-            {/* Modal Para Detalhes dos medicos */}
+            {/* Modal Para Detalhes dos usuarios */}
             <Transition show={show}>
                 <Dialog onClose={() => setShow(false)} className="relative z-10">
                     {/* Fundo escuro */}
@@ -396,7 +409,7 @@ export default function Usuario({ usuarios }) {
                                 </div>
                                 <div className="flex flex-col space-y-2 mt-4 px-3 rounded">
                                     <div className="flex justify-between items-center ">
-                                        <label htmlFor="" className="font-bold">Nome</label>
+                                        <label htmlFor="" className="font-bold">Username</label>
                                         <label htmlFor="" className="">{item.username}</label>
                                     </div>
                                     <div className="flex justify-between items-center ">
@@ -407,13 +420,82 @@ export default function Usuario({ usuarios }) {
                                         <label htmlFor="" className="font-bold">Perfil</label>
                                         <label htmlFor="" className="">{item.role}</label>
                                     </div>
+                                    {(item.role !== 'admin') && (
+                                        <div>
+                                            <div className="border"></div>
+                                            <div className="flex justify-between items-center ">
+                                                <label htmlFor="" className="font-bold">Nome Completo</label>
+                                                <label htmlFor="" className="">{item.perfil?.dados.nome}</label>
+                                            </div>
+                                            <div className="flex justify-between items-center ">
+                                                <label htmlFor="" className="font-bold">Contacto</label>
+                                                <label htmlFor="" className="">{item.perfil?.dados.contacto}</label>
+                                            </div>
+                                            <div className="flex justify-between items-center ">
+                                                <label htmlFor="" className="font-bold">Morada</label>
+                                                <label htmlFor="" className="">{item.perfil?.dados.morada}</label>
+                                            </div>
+                                            <div className="flex justify-between items-center ">
+                                                <label htmlFor="" className="font-bold">Gênero</label>
+                                                <label htmlFor="" className="">{item.perfil?.dados.sexo}</label>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {item.role === 'medico' && (
+                                        <div>
+                                            <div className="border my-2"></div>
+
+                                            <div className="flex justify-between items-center">
+                                                <label className="font-bold">Estado</label>
+                                                <span
+                                                    className={`px-2 py-1 rounded text-sm 
+                    ${item.perfil?.dados.estado === "ativo"
+                                                            ? "bg-green-100 text-green-600"
+                                                            : "bg-red-100 text-red-600"
+                                                        }`}
+                                                >
+                                                    {item.perfil?.dados.estado}
+                                                </span>
+                                            </div>
+
+                                            <div className="mt-3">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+
+                                                        router.patch(
+                                                            route("medicos.changeState", item.perfil?.dados.id),
+                                                            {},
+                                                            {
+                                                                preserveScroll: true,
+                                                                onSuccess: () => {
+                                                                    toast.success("Estado alterado com sucesso!");
+                                                                },
+                                                                onError: () => {
+                                                                    toast.error("Erro ao alterar estado!");
+                                                                },
+                                                                onFinish: () => {
+                                                                    setShow(false);
+                                                                },
+                                                            }
+                                                        );
+                                                    }}
+                                                    className="bg-cyan-500 text-white px-3 py-1 rounded hover:bg-cyan-600 transition"
+                                                >
+                                                    Alterar Estado
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </div>
                             </div>
                         </DialogPanel>
                     </Transition.Child>
                 </Dialog>
             </Transition>
-            {/* Modal Para Deletar dos medicos */}
+            {/* Modal Para Deletar dos usuarios */}
             <Dialog open={destroier} onClose={setDestroier} className="relative z-10 transition">
                 {/* Fundo escuro */}
                 <Transition.Child

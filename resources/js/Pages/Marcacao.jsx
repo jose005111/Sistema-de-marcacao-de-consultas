@@ -1,9 +1,12 @@
-import { Head, useForm, usePage, Link } from "@inertiajs/react";
+import { Head, useForm, usePage, Link, router } from "@inertiajs/react";
 import {
+    LiaCheckCircle,
+    LiaCheckSquare,
     LiaEditSolid,
     LiaEyeSolid,
     LiaFilterSolid,
     LiaPlusCircleSolid,
+    LiaPrintSolid,
     LiaTimesSolid,
     LiaTrashAltSolid,
 } from "react-icons/lia";
@@ -12,6 +15,7 @@ import { useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 import Loader from "../components/loader";
+import Medico from './perfil/Medico';
 
 export default function Marcacao({ marcacoes, especialidades, pacientes }) {
     const route = useRoute();
@@ -19,6 +23,7 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
     const { auth } = usePage().props;
     const { component } = usePage();
     const [vagas, setVagas] = useState([]);
+    const [medicos, setMedicos] = useState([]);
     const [open, setOpen] = useState(false);
     const [edit, setEdit] = useState(false);
     const [show, setShow] = useState(false);
@@ -45,32 +50,54 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
         console.log(data);
     }
 
+    async function carregarMedicos(especialidadeId) {
+        if (!especialidadeId) return;
+
+        const response = await fetch(
+            route("medicos.por-especialidade", especialidadeId)
+        );
+        const data = await response.json();
+        if (data.length === 0) {
+            toast.info("Nenhum médico disponível para esta especialidade.");
+            setOpen(false);
+            setVagas([]);
+            setHorarios([]);
+            return;
+        }
+        setMedicos(data);
+    }
     const { data, setData, post, put, get, delete: destroy, errors, processing, reset } = useForm({
         especialidade_id: "",
         paciente_id: auth.user.role === 'utente' ? auth.user.paciente.id : "",
         vaga_id: "",
         horario_id: "",
     });
-
     function submit(e) {
         e.preventDefault();
+
         post("/marcacoes", {
             onSuccess: () => {
-                setOpen(false);
                 toast.success("Marcação adicionada com sucesso!");
             },
+
             onError: (errors) => {
-                // Inertia envia os erros do Laravel na propriedade errors
                 if (errors.message) {
                     toast.error(errors.message);
                 } else {
                     toast.error("Erro ao adicionar marcação!");
                 }
+            },
 
+            onFinish: () => {
+                // equivalente ao finally
                 setOpen(false);
+                setMedicos([]);
+                setVagas([]);
+                setHorarios([]);
             },
         });
     }
+
 
 
     // Atualizar marcação
@@ -101,12 +128,18 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
         <div className="p-6">
             <Head title={component} />
             <div className="flex items-center space-x-2">
-                <button
-                    onClick={() => { setOpen(true); reset() }}
-                    className="flex items-center text-green-400 bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"
-                >
-                    <LiaPlusCircleSolid className="text-2xl me-1" /> Nova Marcação
-                </button>
+                {
+                    auth.user.role === 'utente' ? (
+                        <button
+                            onClick={() => { setOpen(true); reset() }}
+                            className="flex items-center text-green-400 bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"
+                        >
+                            <LiaPlusCircleSolid className="text-2xl me-1" /> Nova Marcação
+                        </button>
+                    )
+                        : ""
+                }
+
 
                 <button
                     onClick={() => setFilter(true)}
@@ -146,30 +179,69 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                                     >
                                         <LiaEyeSolid className="text-xl" />
                                     </button>
-                                    <button
-                                        onClick={() => {
-                                            setItem(marcacao);
-                                            setEdit(true);
+                                    {auth.user.role === 'utente' && (
+                                        <button
+                                            onClick={() => {
+                                                setItem(marcacao);
+                                                setEdit(true);
 
-                                            setData({
-                                                paciente_id: marcacao.paciente_id,
-                                                especialidade_id: marcacao.especialidade_id,
-                                                vaga_id: marcacao.vaga_id,
-                                            });
+                                                setData({
+                                                    paciente_id: marcacao.paciente_id,
+                                                    especialidade_id: marcacao.especialidade_id,
+                                                    vaga_id: marcacao.vaga_id,
+                                                });
 
-                                            carregarVagas(marcacao.especialidade_id);
-                                        }}
-                                        className="bg-yellow-400 rounded-full p-1 text-white"
-                                    >
-                                        <LiaEditSolid className="text-xl" />
-                                    </button>
+                                                carregarVagas(marcacao.especialidade_id);
+                                            }}
+                                            className="bg-yellow-400 rounded-full p-1 text-white"
+                                        >
+                                            <LiaEditSolid className="text-xl" />
+                                        </button>
+                                    )}
 
-                                    <button
-                                        onClick={() => { setItem(marcacao); setDestroier(true); }}
-                                        className="bg-rose-400 rounded-full p-1 text-white hover:bg-rose-500"
-                                    >
-                                        <LiaTrashAltSolid className="text-xl" />
-                                    </button>
+                                    {auth.user.role === 'utente' && (
+                                        <button
+                                            onClick={() => { setItem(marcacao); setDestroier(true); }}
+                                            className="bg-rose-400 rounded-full p-1 text-white hover:bg-rose-500"
+                                        >
+                                            <LiaTrashAltSolid className="text-xl" />
+                                        </button>
+                                    )}
+
+                                    {auth.user.role === 'utente' && (
+                                        <a
+                                            href={route("marcacoes.imprimir", marcacao.id)}
+                                            target="_blank"
+                                            className="bg-blue-400 rounded-full p-1 text-white hover:bg-blue-500"
+                                        >
+                                            <LiaPrintSolid className="text-xl" />
+                                        </a>
+
+                                    )}
+
+                                    {auth.user.role === 'medico' && (
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await router.patch(route("marcacoes.realizada", marcacao.id), {}, {
+                                                        preserveScroll: true,
+                                                        onSuccess: () => {
+                                                            toast.success("Marcação realizada com sucesso!");
+                                                        },
+                                                        onError: () => {
+                                                            toast.error("Erro ao atualizar a marcação!");
+                                                        },
+                                                    });
+                                                } catch (error) {
+                                                    toast.error("Erro na requisição!");
+                                                }
+                                            }}
+                                            className="bg-green-400 rounded-full p-1 text-white hover:bg-green-500"
+                                        >
+                                            <LiaCheckCircle className="text-xl" />
+                                        </button>
+                                    )}
+
                                 </td>
                             </tr>
                         ))}
@@ -180,19 +252,23 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                         )}
                     </tbody>
                 </table>
-                <div className="flex items-center justify-end pt-3 px-4">
-                    {marcacoes.links.map((link) =>
-                        link.url ? (
-                            <Link
-                                key={link.label}
-                                href={link.url}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
-                                    }`}
-                            />
-                        ) : ("")
-                    )}
-                </div>
+                {/* // Paginação se tamanho > 10 */}
+                {marcacoes.data.length > 10 && (
+                    <div className="flex items-center justify-end pt-3 px-4">
+                        {marcacoes.links.map((link) =>
+                            link.url ? (
+                                <Link
+                                    key={link.label}
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
+                                        }`}
+                                />
+                            ) : ("")
+                        )}
+                    </div>
+                )}
+
             </div>
 
             {/* Modal de criação */}
@@ -208,15 +284,10 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                         </DialogTitle>
 
                         <form onSubmit={edit ? () => put(route("marcacoes.update", item.id)) : submit} className="space-y-4">
-                            {auth.user.role !== 'utente' && (
-                                <select value={data.paciente_id} onChange={e => setData("paciente_id", e.target.value)} className="input">
-                                    <option value="">Paciente</option>
-                                    {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-                                </select>
-                            )}
                             <select value={data.especialidade_id} onChange={e => {
                                 setData("especialidade_id", e.target.value);
                                 carregarVagas(e.target.value);
+                                carregarMedicos(e.target.value);
                             }} className="input">
                                 <option value="">Especialidade</option>
                                 {especialidades.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
@@ -233,6 +304,13 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                                             {new Date(v.data).toLocaleDateString()} — {v.vagas_disponiveis} vagas
                                         </option>
                                     ))}
+                                </select>
+                            )}
+
+                            {medicos.length > 0 && (
+                                <select value={data.medico_id} onChange={e => setData("medico_id", e.target.value)} className="input">
+                                    <option value="">Médico</option>
+                                    {medicos.map(m => <option key={m.id} value={m.id}>{m.nome}</option>)}
                                 </select>
                             )}
 
@@ -284,22 +362,6 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                             }}
                             className="flex flex-col space-y-4"
                         >
-                            {/* Paciente */}
-                            {auth.user.role !== 'utente' && (
-                                <div>
-                                    <label className="font-bold">Paciente</label>
-                                    <select
-                                        value={data.paciente_id}
-                                        onChange={(e) => setData('paciente_id', e.target.value)}
-                                        className="w-full border rounded p-2"
-                                    >
-                                        <option value="">-- Selecione --</option>
-                                        {pacientes.map(p => (
-                                            <option key={p.id} value={p.id}>{p.nome}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
 
                             {/* Especialidade */}
                             <div>
@@ -417,8 +479,16 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                                         <span>{item.paciente?.morada || "-"}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
+                                        <label className="font-bold">Medico:</label>
+                                        <span>{item.medico?.nome || "-"}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
                                         <label className="font-bold">Marcação Feita:</label>
                                         <span>{new Date(item.created_at).toLocaleDateString() || "-"}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <label className="font-bold">Estado :</label>
+                                        <span>{item.estado}</span>
                                     </div>
                                 </div>
                             </div>
@@ -449,33 +519,39 @@ export default function Marcacao({ marcacoes, especialidades, pacientes }) {
                                         data: data.data || "",
                                     });
                                 }} className="flex flex-col space-y-2">
-                                    <div>
-                                        <label>Especialidade:</label>
-                                        <select
-                                            value={data.especialidade_id}
-                                            onChange={(e) => setData("especialidade_id", e.target.value)}
-                                            className="border rounded p-2 w-full"
-                                        >
-                                            <option value="">-- Todas --</option>
-                                            {especialidades.map((esp) => (
-                                                <option key={esp.id} value={esp.id}>{esp.nome}</option>
-                                            ))}
-                                        </select>
-                                    </div>
 
-                                    <div>
-                                        <label>Paciente:</label>
-                                        <select
-                                            value={data.paciente_id}
-                                            onChange={(e) => setData("paciente_id", e.target.value)}
-                                            className="border rounded p-2 w-full"
-                                        >
-                                            <option value="">-- Todos --</option>
-                                            {pacientes.map((p) => (
-                                                <option key={p.id} value={p.id}>{p.nome}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    {(auth.user.role !== 'medico') && (
+                                        <div>
+                                            <label>Especialidade:</label>
+                                            <select
+                                                value={data.especialidade_id}
+                                                onChange={(e) => setData("especialidade_id", e.target.value)}
+                                                className="border rounded p-2 w-full"
+                                            >
+                                                <option value="">-- Todas --</option>
+                                                {especialidades.map((esp) => (
+                                                    <option key={esp.id} value={esp.id}>{esp.nome}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {(auth.user.role === 'recepcionista') && (
+                                        <div>
+                                            <label>Paciente:</label>
+                                            <select
+                                                value={data.paciente_id}
+                                                onChange={(e) => setData("paciente_id", e.target.value)}
+                                                className="border rounded p-2 w-full"
+                                            >
+                                                <option value="">-- Todos --</option>
+                                                {pacientes.map((p) => (
+                                                    <option key={p.id} value={p.id}>{p.nome}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
 
                                     <div>
                                         <label>Data:</label>

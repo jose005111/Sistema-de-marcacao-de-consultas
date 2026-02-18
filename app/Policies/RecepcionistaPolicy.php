@@ -13,15 +13,15 @@ class RecepcionistaPolicy
     public function viewAny(User $user)
     {
         // Apenas admin pode listar recepcionistas
-        return $user->role === 'admin';
+        // return $user->role === 'admin';
     }
 
     public function view(User $user, Recepcionista $recepcionista)
     {
         // Admin pode ver qualquer recepcionista
-        if ($user->role === 'admin') {
-            return true;
-        }
+        // if ($user->role === 'admin') {
+        //     return true;
+        // }
 
         // Recepcionista só vê seu próprio perfil
         return $user->role === 'recepcionista' && $recepcionista->user_id === $user->id;

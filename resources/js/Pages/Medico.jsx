@@ -106,7 +106,7 @@ export default function Medico({ medicos, especialidades }) {
         <div className="p-6">
             <Head title={component} />
             <div className="flex items-center space-x-2">
-                <button onClick={() => setOpen(true)} className="flex items-center text-green-400  bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"> <LiaUserPlusSolid className="text-2xl me-1" /> Adicionar </button>
+                {/* <button onClick={() => setOpen(true)} className="flex items-center text-green-400  bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"> <LiaUserPlusSolid className="text-2xl me-1" /> Adicionar </button> */}
 
                 <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Filtrar </button>
             </div>
@@ -117,7 +117,7 @@ export default function Medico({ medicos, especialidades }) {
                             <td>Nº de Ordem</td>
                             <td>Nome</td>
                             <td>Especialidade</td>
-                            <td>Contacto</td>
+                            <td>Estado</td>
                             <td className="text-center">Acções</td>
                         </tr>
                     </thead>
@@ -127,7 +127,7 @@ export default function Medico({ medicos, especialidades }) {
                                 <td className="font-bold">{medico.ordem}</td>
                                 <td>{medico.nome}</td>
                                 <td>{medico.especialidade.nome}</td>
-                                <td>{medico.contacto}</td>
+                                <td> <span className={medico.estado === "ativo" ? "bg-green-100 text-green-800 font-bold px-2" : "bg-red-100 text-red-800 font-bold px-2"}>{medico.estado}</span></td>
                                 <td className="flex items-center justify-center space-x-2">
                                     <button onClick={() => showMedico(medico)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500"><LiaEyeSolid className="text-xl" /></button>
                                     <button onClick={() => editMedico(medico)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
@@ -143,19 +143,21 @@ export default function Medico({ medicos, especialidades }) {
 
                     </tbody>
                 </table>
-                <div className="flex items-center justify-end pt-3 px-4">
-                    {medicos.links.map((link) =>
-                        link.url ? (
-                            <Link
-                                key={link.label}
-                                href={link.url}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
-                                    }`}
-                            />
-                        ) : ("")
-                    )}
-                </div>
+                {medicos.data.length > 10 && (
+                    <div className="flex items-center justify-end pt-3 px-4">
+                        {medicos.links.map((link) =>
+                            link.url ? (
+                                <Link
+                                    key={link.label}
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
+                                        }`}
+                                />
+                            ) : ("")
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Modal Para Adicionar medicos */}
@@ -521,6 +523,10 @@ export default function Medico({ medicos, especialidades }) {
                                     <div className="flex justify-between items-center ">
                                         <label htmlFor="" className="font-bold">Morada</label>
                                         <label htmlFor="" className="">{item.morada}</label>
+                                    </div>
+                                    <div className="flex justify-between items-center ">
+                                        <label htmlFor="" className="font-bold">Estado</label>
+                                        <label htmlFor="" className="">{item.estado}</label>
                                     </div>
 
                                 </div>

@@ -13,15 +13,15 @@ class PacientePolicy
     public function viewAny(User $user)
     {
         // Admin e recepcionista podem listar todos os pacientes
-        return in_array($user->role, ['admin', 'recepcionista']);
+        // return in_array($user->role, ['recepcionista']);
     }
 
     public function view(User $user, Paciente $paciente)
     {
         // Admin e recepcionista podem ver qualquer paciente
-        if (in_array($user->role, ['admin', 'recepcionista'])) {
-            return true;
-        }
+        // if (in_array($user->role, ['recepcionista'])) {
+        //     return true;
+        // }
 
         // O paciente só vê seu próprio registro
         return $user->role === 'utente' && $paciente->user_id === $user->id;

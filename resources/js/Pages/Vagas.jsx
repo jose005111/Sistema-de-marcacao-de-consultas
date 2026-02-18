@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Dialog, DialogPanel, DialogTitle, Transition } from "@headlessui/react";
 import { toast } from "react-toastify";
 import Loader from "../components/loader";
+import axios from "axios";
 
 export default function Vagas({ vagas, especialidades }) {
     const route = useRoute();
@@ -26,10 +27,24 @@ export default function Vagas({ vagas, especialidades }) {
     const [showDetalhes, setShowDetalhes] = useState(false);
     const [vagaSelecionada, setVagaSelecionada] = useState(null);
 
-    function openDetalhes(vaga) {
-        setVagaSelecionada(vaga);
-        setShowDetalhes(true);
+    async function openDetalhes(vaga) {
+        try {
+            const response = await axios.get(
+                `/vagas/${vaga.especialidade_id}/detalhes`
+            );
+
+            setVagaSelecionada({
+                ...vaga,
+                datas: response.data
+            });
+
+            setShowDetalhes(true);
+
+        } catch (error) {
+            console.error(error);
+        }
     }
+
 
     const [item, setItem] = useState({});
 
@@ -95,6 +110,8 @@ export default function Vagas({ vagas, especialidades }) {
 
 
 
+
+
     return (
         <div className="p-6">
             <Head title={component} />
@@ -120,46 +137,91 @@ export default function Vagas({ vagas, especialidades }) {
 
             {/* Tabela */}
             <div className="overflow-x-auto rounded-2xl mt-4">
-                <table className="min-w-full text-sm">
-                    <thead className="bg-gray-100 text-xs uppercase">
-                        <tr>
-                            <th>Especialidade</th>
-                            <th>Data</th>
-                            <th>Total</th>
-                            <th>Disponíveis</th>
-                            <th className="text-center">Acções</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {vagas?.data?.map((v) => (
-                            <tr
-                                key={v.id}
-                                className="odd:bg-gray-50 hover:bg-green-50"
-                            >
-                                <td>{v.especialidade?.nome}</td>
-                                <td>{new Date(v.data).toDateString()}</td>
-                                <td>{v.total_vagas}</td>
-                                <td className="font-bold text-green-600">
-                                    {v.vagas_disponiveis}
-                                </td>
-                                <td className="flex items-center justify-center space-x-2">
-                                    <button onClick={() => openDetalhes(v)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500"><LiaEyeSolid className="text-xl" /></button>
-                                    <button onClick={() => openEdit(v)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
-                                    <button onClick={() => openDelete(v)} className="bg-rose-400 rounded-full p-1  text-white hover:bg-rose-500"><LiaTrashAltSolid className="text-xl" /></button>
-                                </td>
-
-                            </tr>
-                        ))}
-
-                        {(!vagas?.data || vagas.data.length === 0) && (
+                <div className="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-gradient-to-r from-cyan-50 to-emerald-50 text-xs uppercase text-gray-600">
                             <tr>
-                                <td colSpan={5} className="text-center py-4">
-                                    Nenhuma vaga cadastrada.
-                                </td>
+                                <th className="px-6 py-4 text-left">Especialidade</th>
+                                <th className="px-6 py-4 text-center">Vagas</th>
+                                <th className="px-6 py-4 text-center">Estado</th>
+                                <th className="px-6 py-4 text-center">Acções</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+
+                        <tbody className="divide-y divide-gray-100">
+                            {vagas?.data?.map((v) => {
+                                const ocupadas = v.total_vagas - v.vagas_disponiveis;
+                                const percentagem = Math.round((ocupadas / v.total_vagas) * 100);
+
+                                let statusColor = "bg-green-100 text-green-700";
+                                if (percentagem == 100) statusColor = "bg-red-100 text-red-600";
+                                if (percentagem >= 70 && percentagem < 100) statusColor = "bg-yellow-100 text-yellow-600";
+                                else if (percentagem >= 40 && percentagem < 70) statusColor = "bg-yellow-100 text-yellow-700";
+
+                                return (
+                                    <tr key={v.especialidade_id} className="hover:bg-gray-50 transition">
+                                        <td className="px-6 py-2 font-semibold text-gray-700">
+                                            {v.especialidade?.nome}
+                                        </td>
+
+                                        <td className="px-6 py-2 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className="font-bold text-gray-700">
+                                                    {v.vagas_disponiveis} / {v.total_vagas}
+                                                </span>
+
+                                                <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                                                    <div
+                                                        className="bg-cyan-500 h-2 rounded-full transition-all"
+                                                        style={{ width: `${percentagem}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td className="px-6 py-2 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColor}`}>
+                                                {percentagem == 100
+                                                    ? "Esgotada"
+                                                    : (percentagem >= 70 && percentagem < 100)
+                                                        ? "Alta Procura"
+                                                        : (percentagem >= 40 && percentagem < 70)
+                                                            ? "Média"
+                                                            : "Disponível"}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-6 py-2 flex justify-center space-x-2">
+                                            <button onClick={() => openDetalhes(v)}
+                                                className="bg-cyan-500 hover:bg-cyan-600 text-white p-1 rounded-full transition">
+                                                <LiaEyeSolid className="text-xl" />
+                                            </button>
+
+                                            <button onClick={() => openEdit(v)}
+                                                className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded-full transition">
+                                                <LiaEditSolid className="text-xl" />
+                                            </button>
+
+                                            <button onClick={() => openDelete(v)}
+                                                className="bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full transition">
+                                                <LiaTrashAltSolid className="text-xl" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+
+                            {(!vagas?.data || vagas.data.length === 0) && (
+                                <tr>
+                                    <td colSpan={5} className="text-center py-8 text-gray-400">
+                                        Nenhuma vaga cadastrada.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
 
                 {/* Paginação */}
                 <div className="flex items-center justify-end pt-3 px-4">
@@ -180,7 +242,7 @@ export default function Vagas({ vagas, especialidades }) {
             {/* Modal */}
             <Transition show={open}>
                 <Dialog onClose={() => setOpen(false)} className="relative z-10">
-                    <div className="fixed inset-0 bg-black/40" />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                     <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                         <DialogTitle className="font-bold mb-4 flex justify-between border-b pb-2">
                             Disponibilizar Vagas
@@ -226,17 +288,22 @@ export default function Vagas({ vagas, especialidades }) {
 
                             <button
                                 disabled={processing}
-                                className="bg-green-500 hover:bg-green-600 text-white rounded-lg p-2 w-full"
+                                className="w-full min-h-[40px] bg-green-500 hover:bg-green-600 rounded-lg text-white p-1"
                             >
-                                {processing ? <Loader /> : "Salvar"}
+                                {processing ? (
+                                    <span className="flex items-center justify-center">
+                                        <Loader />
+                                    </span>
+                                ) : "Salvar"}
                             </button>
                         </form>
                     </DialogPanel>
                 </Dialog>
             </Transition>
+
             <Transition show={filter}>
                 <Dialog onClose={() => setFilter(false)} className="relative z-10">
-                    <div className="fixed inset-0 bg-black/40" />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                     <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
                         <DialogTitle className="font-bold mb-4 border-b pb-2">
                             Pesquisar Vagas
@@ -272,75 +339,94 @@ export default function Vagas({ vagas, especialidades }) {
                     </DialogPanel>
                 </Dialog>
             </Transition>
-            <Transition show={showDetalhes}>
-                <Dialog
-                    onClose={() => setShowDetalhes(false)}
-                    className="relative z-10"
-                >
-                    <div className="fixed inset-0 bg-black/40" />
 
-                    <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
-                        <DialogTitle className="font-bold mb-4 flex justify-between items-center border-b pb-2">
-                            Detalhes da Vaga
+            <Transition show={showDetalhes}>
+                <Dialog onClose={() => setShowDetalhes(false)} className="relative z-50">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+
+                    <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl p-6 overflow-y-auto">
+
+                        <DialogTitle className="flex justify-between items-center border-b pb-4">
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-800">
+                                    Detalhes da Especialidade
+                                </h2>
+                            </div>
+
                             <button onClick={() => setShowDetalhes(false)}>
-                                <LiaTimesSolid className="text-2xl" />
+                                <LiaTimesSolid className="text-2xl text-gray-500 hover:text-gray-800" />
                             </button>
                         </DialogTitle>
 
                         {vagaSelecionada && (
-                            <div className="space-y-4 text-sm">
-                                <div>
-                                    <span className="font-semibold">Especialidade:</span>
-                                    <p>{vagaSelecionada.especialidade?.nome}</p>
-                                </div>
+                            <div className="mt-6 space-y-6">
 
                                 <div>
-                                    <span className="font-semibold">Data:</span>
-                                    <p>
-                                        {new Date(vagaSelecionada.data).toLocaleDateString()}
+                                    <h3 className="text-xl font-bold text-cyan-600">
+                                        {vagaSelecionada.especialidade?.nome}
+                                    </h3>
+                                    <p className="text-sm text-gray-400">
+                                        Distribuição por data
                                     </p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-gray-100 p-3 rounded">
-                                        <span className="font-semibold block">
-                                            Total de Vagas
-                                        </span>
-                                        <span className="text-lg font-bold">
-                                            {vagaSelecionada.total_vagas}
-                                        </span>
-                                    </div>
+                                <div className="space-y-4">
+                                    {vagaSelecionada.datas?.map((item, index) => {
 
-                                    <div className="bg-green-100 p-3 rounded">
-                                        <span className="font-semibold block">
-                                            Disponíveis
-                                        </span>
-                                        <span className="text-lg font-bold text-green-700">
-                                            {vagaSelecionada.vagas_disponiveis}
-                                        </span>
-                                    </div>
+                                        const ocupadas = item.total_vagas - item.vagas_disponiveis;
+                                        const percentagem = Math.round(
+                                            (ocupadas / item.total_vagas) * 100
+                                        );
+
+                                        let corBarra = "bg-green-500";
+                                        if (percentagem >= 70) corBarra = "bg-red-500";
+                                        else if (percentagem >= 40) corBarra = "bg-yellow-500";
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="bg-gray-50 p-4 rounded-2xl shadow-sm border border-gray-100"
+                                            >
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className="font-semibold text-gray-700">
+                                                        {new Date(item.data).toLocaleDateString()}
+                                                    </span>
+
+                                                    <span className="text-xs text-gray-500">
+                                                        {item.vagas_disponiveis} disponíveis
+                                                    </span>
+                                                </div>
+
+                                                <div className="w-full bg-gray-200 h-3 rounded-full">
+                                                    <div
+                                                        className={`${corBarra} h-3 rounded-full transition-all`}
+                                                        style={{ width: `${percentagem}%` }}
+                                                    />
+                                                </div>
+
+                                                <div className="flex justify-between text-xs mt-2 text-gray-500">
+                                                    <span>Total: {item.total_vagas}</span>
+                                                    <span>Ocupadas: {ocupadas}</span>
+                                                    <span>{percentagem}%</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
-                                <div className="bg-red-100 p-3 rounded">
-                                    <span className="font-semibold block">
-                                        Ocupadas
-                                    </span>
-                                    <span className="text-lg font-bold text-red-600">
-                                        {vagaSelecionada.total_vagas -
-                                            vagaSelecionada.vagas_disponiveis}
-                                    </span>
-                                </div>
                             </div>
                         )}
+
                     </DialogPanel>
                 </Dialog>
             </Transition>
+
 
             {/* Modal de edição de vaga */}
             <Transition show={edit}>
                 <Dialog onClose={() => setEdit(false)} className="relative z-10">
                     {/* Fundo */}
-                    <div className="fixed inset-0 bg-black/40" />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
                     {/* Painel lateral */}
                     <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
@@ -440,7 +526,7 @@ export default function Vagas({ vagas, especialidades }) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/40" />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                 </Transition.Child>
 
                 {/* Painel */}

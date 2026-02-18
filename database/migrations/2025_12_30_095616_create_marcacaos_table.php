@@ -18,6 +18,10 @@ return new class extends Migration
         ->constrained()
         ->cascadeOnDelete();
 
+    $table->foreignId('medico_id')
+        ->constrained()
+        ->cascadeOnDelete();
+
     $table->foreignId('paciente_id')
         ->constrained()
         ->cascadeOnDelete();
@@ -28,7 +32,7 @@ return new class extends Migration
 
     $table->foreignId('horario_id')
         ->constrained('horarios');
-
+    $table->enum('estado', [ 'confirmada', 'realizada'])->default('confirmada');
     $table->timestamps();
 });
 

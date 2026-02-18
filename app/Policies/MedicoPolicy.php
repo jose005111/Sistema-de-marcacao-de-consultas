@@ -13,13 +13,13 @@ class MedicoPolicy
     public function viewAny(User $user)
     {
         // Admin e recepcionista podem listar todos os médicos
-        return in_array($user->role, ['admin', 'recepcionista']);
+        return in_array($user->role, ['recepcionista']);
     }
 
     public function view(User $user, Medico $medico)
     {
         // Admin e recepcionista veem todos, médico só o seu, utente não vê
-        if (in_array($user->role, ['admin', 'recepcionista'])) {
+        if (in_array($user->role, ['recepcionista'])) {
             return true;
         }
 

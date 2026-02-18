@@ -31,9 +31,9 @@ export default function Header() {
                 </Link>
             </div>
             <div className="flex space-x-2 mx-1">
-                <button onClick={logout} className="bg-gray-100 rounded-full p-2">
+                {/* <button onClick={logout} className="bg-gray-100 rounded-full p-2">
                     <BiBell className="text-2xl text-cyan-500" />
-                </button>
+                </button> */}
                 <button onClick={() => setLogouting(true)} className="bg-gray-100 rounded-full p-2">
                     <FiLogOut className="text-2xl text-rose-500" />
                 </button>

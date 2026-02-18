@@ -64,10 +64,57 @@ class User extends Authenticatable
         return $this->role === 'utente';
     }
 
-    // app/Models/User.php
+public function medico()
+{
+    return $this->hasOne(Medico::class);
+}
+
 public function paciente()
 {
     return $this->hasOne(Paciente::class);
 }
+
+public function recepcionista()
+{
+    return $this->hasOne(Recepcionista::class);
+}
+
+
+public function perfilModel()
+{
+    return match ($this->role) {
+        'medico' => $this->medico,
+        'utente' => $this->paciente,
+        'recepcionista' => $this->recepcionista,
+        default => null,
+    };
+}
+
+public function perfilCompleto(): bool
+{
+    $perfil = $this->perfilModel();
+
+    if (!$perfil) {
+        return false;
+    }
+
+    return !empty($perfil->nome)
+        && !empty($perfil->morada)
+        && !empty($perfil->contacto);
+}
+
+protected $appends = ['perfil'];
+
+public function getPerfilAttribute()
+{
+    $perfil = $this->perfilModel();
+
+    return [
+        'completo' => $this->perfilCompleto(),
+        'dados' => $perfil,
+    ];
+}
+
+
 
 }

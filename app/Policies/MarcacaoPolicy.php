@@ -10,7 +10,7 @@ class MarcacaoPolicy
 {
     public function viewAny(User $user)
     {
-        return $user->isAdmin() || $user->isRecepcionista() || $user->isUtente();
+        return  $user->isRecepcionista() || $user->isUtente() || $user->isMedico();
     }
     
     public function view(User $user, Marcacao $marcacao)
@@ -22,12 +22,11 @@ class MarcacaoPolicy
 
     public function create(User $user)
     {
-        return $user->isAdmin() || $user->isRecepcionista()  || ($user->isUtente());
+        return  ($user->isUtente());
     }
 
     public function delete(User $user, Marcacao $marcacao)
     {
-        return $user->isAdmin()  || ($user->isUtente() && $marcacao->user_id === $user->id);
+        return $user->isAdmin()  || ($user->isUtente());
     }
 }
-

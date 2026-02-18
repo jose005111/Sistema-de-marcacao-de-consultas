@@ -42,7 +42,9 @@ class HandleInertiaRequests extends Middleware
                  'toast' => fn () => $request->session()->get('toast'),
             ],
             'auth' => [
-            'user' => $request->user(),
+            'user' => $request->user()
+                ? $request->user()->load(['medico', 'paciente', 'recepcionista'])
+                : null,
             'can' => $request->user() ? [
                 'viewUsuarios'        => $request->user()->can('viewAny', \App\Models\User::class),
                 'viewPacientes'       => $request->user()->can('viewAny', \App\Models\Paciente::class),

@@ -4,6 +4,8 @@ import img from "@/assets/logo.png"
 import { FiEye, FiEyeOff, FiMail } from "react-icons/fi";
 import { useState } from "react";
 import Loader from "../components/loader";
+
+
 export default function Login({ action }) {
     const { auth } = usePage().props
     const [showPass, setShowPass] = useState(false)

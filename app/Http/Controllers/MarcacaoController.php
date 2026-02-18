@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vaga;
-use Inertia\Inertia;
+use App\Models\Especialidade;
 use App\Models\Horario;
 use App\Models\Marcacao;
+use App\Models\Medico;
 use App\Models\Paciente;
+use App\Models\Vaga;
 use Illuminate\Http\Request;
-use App\Models\Especialidade;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+
+use Barryvdh\DomPDF\Facade\Pdf;
 // use Illuminate\Support\Facades\Validator;
 
 
@@ -26,6 +29,7 @@ class MarcacaoController extends Controller
     $user = Auth::user();
 
     $query = Marcacao::with(
+        'medico',
         'especialidade',
         'paciente',
         'vaga',
@@ -37,6 +41,12 @@ class MarcacaoController extends Controller
      */
     if ($user->role === 'utente') {
         $query->where('paciente_id', $user->paciente->id);
+    }
+    /**
+     * 🔒 Se for MEDICO, ver apenas as suas marcações
+     */
+    if ($user->role === 'medico') {
+        $query->where('medico_id', $user->medico->id)->where('estado', 'confirmada');
     }
 
     // 🔍 Filtros opcionais
@@ -50,6 +60,10 @@ class MarcacaoController extends Controller
         $query->where('especialidade_id', $request->especialidade_id);
     }
 
+    if ($request->filled('medico_id')) {
+        $query->where('medico_id', $request->medico_id);
+    }
+
     if ($request->filled('paciente_id') && $user->tipo !== 'utente') {
         $query->where('paciente_id', $request->paciente_id);
     }
@@ -58,11 +72,11 @@ class MarcacaoController extends Controller
 
     return Inertia::render('Marcacao', [
         'marcacoes' => $marcacoes,
-        'especialidades' => Especialidade::all(),
+        'especialidades' => Especialidade::with('medicos')->whereHas('medicos')->get(),
         'pacientes' => $user->tipo === 'utente'
             ? []
             : Paciente::all(),
-        'vagas' => Vaga::all(),
+        // 'vagas' => Vaga::all(),
     ]);
 }
     /**
@@ -90,6 +104,7 @@ public function store(Request $request)
     $request->validate([
         'especialidade_id' => 'required|exists:especialidades,id',
         'paciente_id' => 'required|exists:pacientes,id',
+        'medico_id' => 'required|exists:medicos,id',
         'vaga_id'     => 'required|exists:vagas,id',
         'horario_id'  => 'required|exists:horarios,id',
     ]);
@@ -124,6 +139,7 @@ public function store(Request $request)
 
         $marcacao = Marcacao::create([
             'paciente_id'      => $request->paciente_id,
+            'medico_id'        => $request->medico_id,
             'vaga_id'          => $vaga->id,
             'horario_id'       => $request->horario_id,
             'especialidade_id' => $vaga->especialidade_id,
@@ -163,6 +179,7 @@ public function store(Request $request)
 public function update(Request $request, $id)
 {
     $request->validate([
+        'medico_id' => 'required|exists:medicos,id',
         'paciente_id' => 'required|exists:pacientes,id',
         'vaga_id'     => 'required|exists:vagas,id',
         'horario_id'  => 'required|exists:horarios,id',
@@ -188,6 +205,7 @@ public function update(Request $request, $id)
         // ✔ atualizar dados
         $marcacao->update([
             'paciente_id'      => $request->paciente_id,
+            'medico_id'        => $request->medico_id,
             'vaga_id'          => $novaVaga->id,
             'horario_id'       => $request->horario_id,
             'especialidade_id' => $novaVaga->especialidade_id,
@@ -234,6 +252,23 @@ public function update(Request $request, $id)
             'disponivel' => !in_array($h->id, $ocupados),
         ];
     });
+}
+
+
+public function imprimir(Marcacao $marcacao)
+{
+    $marcacao->load(['paciente', 'medico.especialidade']);
+
+    $pdf = Pdf::loadView('pdf.marcacao', compact('marcacao'));
+
+    return $pdf->stream('marcacao.pdf');
+}
+public function marcarRealizada(Marcacao $marcacao)
+{
+    $marcacao->estado = 'realizada';
+    $marcacao->save();
+
+    return redirect()->route('marcacoes.index')->with('success', 'Marcação marcada como realizada');
 }
 
 

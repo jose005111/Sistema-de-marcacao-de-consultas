@@ -136,19 +136,22 @@ export default function Paciente({ pacientes }) {
                         )}
                     </tbody>
                 </table>
-                <div className="flex items-center justify-end pt-3 px-4">
-                    {pacientes.links.map((link) =>
-                        link.url ? (
-                            <Link
-                                key={link.label}
-                                href={link.url}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
-                                    }`}
-                            />
-                        ) : ("")
-                    )}
-                </div>
+
+                {pacientes.data.length > 10 && (
+                    <div className="flex items-center justify-end pt-3 px-4">
+                        {pacientes.links.map((link) =>
+                            link.url ? (
+                                <Link
+                                    key={link.label}
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
+                                        }`}
+                                />
+                            ) : ("")
+                        )}
+                    </div>
+                )}
             </div>
             {/* Modal Para Adicionar Pacientes */}
             <Transition show={open}>

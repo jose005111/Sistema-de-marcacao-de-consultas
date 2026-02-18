@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Especialidade;
+use App\Models\Marcacao;
 use Illuminate\Database\Eloquent\Model;
 
 class Medico extends Model
@@ -18,10 +19,14 @@ class Medico extends Model
         'contacto',
         'sexo',
         'bi',
+        'estado',
         'user_id',
     ];
 
     public function especialidade(){
         return $this->belongsTo(Especialidade::class, 'especialidade_id', 'id');
+    }
+    public function marcacao(){
+        return $this->belongsTo(Marcacao::class);
     }
 }

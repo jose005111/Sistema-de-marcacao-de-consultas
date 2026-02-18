@@ -43,6 +43,13 @@ class MedicoController extends Controller
         'especialidades' => $especialidades
     ]);
 }
+
+public function medicosPorEspecialidade(string $especialidadeId)
+{
+    $medicos = Medico::where('especialidade_id', $especialidadeId)->where('estado', 'ativo')->get();
+    return response()->json($medicos);
+}
+
 public function perfil()
 {
     $especialidades = Especialidade::all();
@@ -143,4 +150,17 @@ public function perfil()
         $medico->delete();
         return redirect()->route('medicos.index');
     }
+
+
+    public function changeState(Medico $medico)
+{
+    $medico->estado = $medico->estado === 'ativo'
+        ? 'inativo'
+        : 'ativo';
+
+    $medico->save();
+
+    return redirect()->route('usuarios.index')->with('success', 'Estado atualizado com sucesso.');
+}
+
 }

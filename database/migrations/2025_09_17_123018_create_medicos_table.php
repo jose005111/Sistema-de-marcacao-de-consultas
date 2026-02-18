@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string("contacto");         
             $table->string("sexo");         
             $table->string("bi")->unique();       
-            $table->foreignId('especialidade_id')->constrained('especialidades')->cascadeOnUpdate();                
+            $table->enum("estado", ["ativo", "inativo"])->default("ativo");   
+            $table->foreignId('especialidade_id')->constrained('especialidades')->cascadeOnUpdate()->cascadeOnDelete();                
             $table->foreignId("user_id")->constrained()->onDelete("cascade");  
             $table->timestamps();
         });
