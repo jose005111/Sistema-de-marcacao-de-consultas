@@ -78,30 +78,23 @@ export default function Especialidade({ especialidades }) {
     //SFunction Modal Show
     function openModal() {
         errors.nome = ""
-        // console.log(item.nome)
         setOpen(true)
     }
     //SFunction Modal Show
     function showEspecialidade(data) {
         setItem(data)
-        // console.log(item.nome)
         setShow(true)
     }
     //Function Modal Edit
     function editEspecialidade(data) {
         setData(data)
-        // console.log(item.nome)
         setEdit(true)
     }
     //Function Modal Delete
     function deleteEspecialidade(data) {
         setItem(data)
-        console.log(item)
         setDestroier(true)
     }
-
-    // console.log(errors);
-    // console.log(especialidades)
 
     return (
         <div className="p-6">
@@ -110,12 +103,12 @@ export default function Especialidade({ especialidades }) {
             <div className="flex items-center space-x-2">
                 <button onClick={() => openModal()} className="flex items-center text-green-400  bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"> <LiaPlusCircleSolid className="text-2xl me-1" /> Adicionar </button>
 
-                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Filtrar </button>
+                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Pesquisar </button>
             </div>
             <div className="overflow-x-auto rounded-2xl mt-4">
-                <table className="min-w-full border-collapse text-sm text-left">
+                <table>
                     <thead>
-                        <tr className="bg-gray-100 text-gray-700 uppercase text-xs tracking-winder">
+                        <tr>
                             <td>Nome</td>
                             <td>Total de Medicos</td>
                             <td className="text-center">Acções</td>
@@ -123,13 +116,13 @@ export default function Especialidade({ especialidades }) {
                     </thead>
                     <tbody className="text-gray-800">
                         {especialidades.data.map((especialdade) => (
-                            <tr key={especialdade.id} className={`${especialdade.id % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 trasition `}>
+                            <tr key={especialdade.id}>
                                 <td>{especialdade.nome}</td>
                                 <td>{especialdade.medicos_count}</td>
                                 <td>
                                     <div className="flex items-center justify-center space-x-2">
-                                        <button onClick={() => showEspecialidade(especialdade)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500"><LiaEyeSolid className="text-xl" /></button>
-                                        <button onClick={() => editEspecialidade(especialdade)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
+                                        <button onClick={() => showEspecialidade(especialdade)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500" title="Detalhes"><LiaEyeSolid className="text-xl" /></button>
+                                        <button onClick={() => editEspecialidade(especialdade)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500" title="Editar"><LiaEditSolid className="text-xl" /></button>
                                         <button onClick={() => deleteEspecialidade(especialdade)} className="bg-rose-400 rounded-full p-1  text-white hover:bg-rose-500"><LiaTrashAltSolid className="text-xl" /></button>
                                     </div>
                                 </td>
@@ -142,19 +135,22 @@ export default function Especialidade({ especialidades }) {
                         )}
                     </tbody>
                 </table>
-                <div className="flex items-center justify-end pt-3 px-4">
-                    {especialidades.links.map((link) =>
-                        link.url ? (
-                            <Link
-                                key={link.label}
-                                href={link.url}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
-                                    }`}
-                            />
-                        ) : ("")
-                    )}
-                </div>
+                {/* Paginação de especialidades*/}
+                {especialidades.data.length >= 10 && (
+                    <div className="flex items-center justify-end pt-3 px-4">
+                        {especialidades.links.map((link) =>
+                            link.url ? (
+                                <Link
+                                    key={link.label}
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    className={`px-2 mx-1  rounded-lg border-2 font-sm ${link.active ? "bg-cyan-600 text-white border-cyan-600 " : "text-cyan-600 border-cyan-600 "
+                                        }`}
+                                />
+                            ) : ("")
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Modal Para Adicionar especialidades */}
@@ -193,7 +189,7 @@ export default function Especialidade({ especialidades }) {
                                 <div className="p-2">
                                     <form onSubmit={submit}>
                                         <div>
-                                            <label className="font-bold text-gray-600" htmlFor="">Nome:</label>
+                                            <label>Nome:</label>
                                             <input type="text" onChange={(e) => setData("nome", e.target.value)} required maxLength={50} />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
@@ -250,7 +246,7 @@ export default function Especialidade({ especialidades }) {
                                 <div className="p-2">
                                     <form onSubmit={search}>
                                         <div>
-                                            <label className="font-bold text-gray-600" htmlFor="">Nome:</label>
+                                            <label>Nome:</label>
                                             <input type="text" onChange={(e) => setData("nome", e.target.value)} required maxLength={50} />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
@@ -305,7 +301,7 @@ export default function Especialidade({ especialidades }) {
                                 <div className="p-2">
                                     <form onSubmit={update}>
                                         <div>
-                                            <label className="font-bold text-gray-600" htmlFor="">Nome:</label>
+                                            <label>Nome:</label>
                                             <input type="text" onChange={(e) => setData("nome", e.target.value)} value={data.nome} className={errors.nome && "!ring-red-500"} />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
@@ -359,11 +355,11 @@ export default function Especialidade({ especialidades }) {
                                 <div className="p-2">
                                     <div>
                                         <div className="flex justify-between">
-                                            <label className="font-bold text-gray-600" htmlFor="">Nome:</label>
+                                            <label>Nome:</label>
                                             <label htmlFor="">{item.nome}</label>
                                         </div>
                                         <div className="flex justify-between">
-                                            <label className="font-bold text-gray-600" htmlFor="">Total de Medicos:</label>
+                                            <label>Total de Medicos:</label>
                                             <label htmlFor="">{item.medicos_count}</label>
                                         </div>
                                     </div>
@@ -416,7 +412,7 @@ export default function Especialidade({ especialidades }) {
                                     <div className="p-2">
                                         <form onSubmit={destroing}>
                                             <p className="text-center my-4">Certeza que desejas deletar esta especialidade?</p>
-                                            <p className="text-center text-sm text-gray-600 my-4">Os Registos relacionados a ele serão perdidos!</p>
+                                            <p className="text-center text-sm text-rose-600 my-4">Os Registos relacionados a ele serão perdidos!</p>
                                             <div className="flex mt-2 space-x-2">
                                                 <button type="button" onClick={() => setDestroier(false)} className="w-full bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
                                                     Cancelar

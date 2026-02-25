@@ -140,7 +140,7 @@ export default function Dashboard(props) {
                                 {Array.from({ length: 5 }, (_, i) => 2025 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
                             </select>
                             <button className="flex items-center bg-cyan-600 hover:bg-cyan-800 text-white px-4 py-2 rounded-md transition">
-                                <LiaFilterSolid className="mr-2" /> Filtrar
+                                <LiaFilterSolid className="mr-2" /> Pesquisar
                             </button>
                         </form>
                     </div>
@@ -185,7 +185,7 @@ export default function Dashboard(props) {
                                 {Array.from({ length: 5 }, (_, i) => 2025 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
                             </select>
                             <button className="flex items-center bg-cyan-600 hover:bg-cyan-800 text-white px-4 py-2 rounded-md transition">
-                                <LiaFilterSolid className="mr-2" /> Filtrar
+                                <LiaFilterSolid className="mr-2" /> Pesquisar
                             </button>
                         </form>
                     </div>

@@ -75,7 +75,7 @@ export default function Recepcionista({ recepcionistas }) {
                     <LiaUserPlusSolid className="text-2xl me-1" /> Adicionar
                 </button>
                 <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400 bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg">
-                    <LiaFilterSolid className="text-2xl me-1" /> Filtrar
+                    <LiaFilterSolid className="text-2xl me-1" /> Pesquisar
                 </button>
             </div>
 
@@ -120,7 +120,8 @@ export default function Recepcionista({ recepcionistas }) {
                     {recepcionistas.links.map((link) =>
                         link.url ? (
                             <Link key={link.label} href={link.url} dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 rounded-lg border-2 border-cyan-600 font-bold ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600"}`} />
+                                className={`px-2 mx-1  rounded-lg border-2 font-sm ${link.active ? "bg-cyan-600 text-white border-cyan-600 " : "text-cyan-600 border-cyan-600 "
+                                    }`} />
                         ) : null
                     )}
                 </div>

@@ -147,7 +147,7 @@ export default function Admin({
 
                         <button className="bg-cyan-600 text-white px-4 py-2 rounded-md flex items-center hover:bg-cyan-800 transition">
                             <LiaFilterSolid className="mr-2" />
-                            Filtrar
+                            Pesquisar
                         </button>
                     </form>
                 </div>

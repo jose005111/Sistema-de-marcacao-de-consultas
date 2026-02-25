@@ -34,6 +34,12 @@ class MedicoController extends Controller
     if ($request->filled('contacto')) {
         $query->Where('contacto', 'like', "%{$request->contacto}%");
     }
+    if ($request->filled('especialidade_id')) {
+        $query->Where('especialidade_id', 'like', "%{$request->especialidade_id}%");
+    }
+    if ($request->filled('sexo')) {
+        $query->Where('sexo', 'like', "%{$request->sexo}%");
+    }
 
     $medicos = $query->latest()->paginate(10);
     $especialidades = Especialidade::all();

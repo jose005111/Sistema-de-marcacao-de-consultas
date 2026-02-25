@@ -182,7 +182,7 @@ export default function Dashboard({
                             </select>
                         </div>
                         <button className="flex items-center bg-cyan-400 hover:bg-cyan-600 text-white font-semibold px-4 py-2 rounded-md transition-all">
-                            <LiaFilterSolid className="text-xl me-2" /> Filtrar
+                            <LiaFilterSolid className="text-xl me-2" /> Pesquisar
                         </button>
                     </form>
                 </div>
@@ -216,7 +216,7 @@ export default function Dashboard({
                             </select>
                         </div>
                         <button className="flex items-center bg-cyan-400 hover:bg-cyan-600 text-white font-semibold px-4 py-2 rounded-md transition-all">
-                            <LiaFilterSolid className="text-xl me-2" /> Filtrar
+                            <LiaFilterSolid className="text-xl me-2" /> Pesquisar
                         </button>
                     </form>
                 </div>

@@ -51,11 +51,16 @@ export default function Sidebar() {
                     </div>
                 ))
             }
-            {habilitar ? "" : <div className="flex justify-center my-2">
-                <span className="bg-red-200 border rounded-full px-2 py-1 text-sm text-red-600">
-                    <AiFillAlert className="inline-block mr-1" />
-                    completar perfil para acessar</span>
-            </div>}
+            {!habilitar && (
+                <div className="flex justify-center my-4 animate-pulse mx-1">
+                    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-4 py-1.5 shadow-sm">
+                        <AiFillAlert className="text-amber-500 text-2xl" />
+                        <span className="text-sm font-medium text-amber-700">
+                            Ação necessária: Complete seu perfil para liberar o menu.
+                        </span>
+                    </div>
+                </div>
+            )}
 
         </div>
     );

@@ -64,7 +64,6 @@ export default function Usuario({ usuarios }) {
         e.preventDefault();
         destroy(route("usuarios.destroy", item), {
             onSuccess: () => {
-                console.log("Feito")
                 toast.success("Usuário Deletado Com Sucesso!")
                 setDestroier(false)
             },
@@ -77,7 +76,6 @@ export default function Usuario({ usuarios }) {
     //Update
     function update(e) {
         setData({ ...data, password: "12345678" })
-        console.log(data)
         e.preventDefault();
         put(route("usuarios.update", data), {
             onSuccess: () => {
@@ -93,13 +91,11 @@ export default function Usuario({ usuarios }) {
     //SFunction Modal Show
     function showUsuario(data) {
         setItem(data)
-        console.log(data)
         setShow(true)
     }
     //Function Modal Edit
     function editUsuario(data) {
         setData(data)
-        // console.log(data)
         setEdit(true)
     }
     //Function Modal Delete
@@ -108,36 +104,33 @@ export default function Usuario({ usuarios }) {
         setDestroier(true)
     }
 
-    // console.log(errors);
-    // console.log(medicos)
-
     return (
         <div className="p-6">
             <Head title={component} />
             <div className="flex items-center space-x-2">
                 <button onClick={() => setOpen(true)} className="flex items-center text-green-400  bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"> <LiaUserPlusSolid className="text-2xl me-1" /> Adicionar </button>
 
-                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Filtrar </button>
+                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Pesquisar </button>
             </div>
-            <div className="max-h-[60vh] 2xl:max-h-[80vh] overflow-y-auto rounded-2xl my-4">
-                <table className="border-collapse text-sm text-left">
+            <div className="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100 mt-4">
+                <table>
                     <thead>
-                        <tr className="bg-gray-100 text-gray-700 uppercase text-xs tracking-winder">
-                            <td>Username</td>
-                            <td>Email</td>
-                            <td>Tipo</td>
-                            <td className="text-center">Acções</td>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th className="text-center">Acções</th>
                         </tr>
                     </thead>
-                    <tbody className="text-gray-800">
+                    <tbody>
                         {usuarios.data.map((usuario, key) => (
-                            <tr key={usuario.id} className={`${key % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 trasition `}>
+                            <tr key={key}>
                                 <td>{usuario.username}</td>
                                 <td>{usuario.email}</td>
                                 <td>{usuario.role}</td>
                                 <td className="flex items-center justify-center space-x-2">
-                                    <button onClick={() => showUsuario(usuario)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500"><LiaEyeSolid className="text-xl" /></button>
-                                    <button onClick={() => editUsuario(usuario)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
+                                    <button onClick={() => showUsuario(usuario)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500" title="Detalhes"><LiaEyeSolid className="text-xl" /></button>
+                                    <button onClick={() => editUsuario(usuario)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500" title="Editar"><LiaEditSolid className="text-xl" /></button>
                                     <button onClick={() => deleteUsuario(usuario)} className="bg-rose-400 rounded-full p-1  text-white hover:bg-rose-500"><LiaTrashAltSolid className="text-xl" /></button>
                                 </td>
                             </tr>
@@ -160,7 +153,7 @@ export default function Usuario({ usuarios }) {
                                 key={link.label}
                                 href={link.url}
                                 dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
+                                className={`px-2 mx-1  rounded-lg border-2 font-sm ${link.active ? "bg-cyan-600 text-white border-cyan-600 " : "text-cyan-600 border-cyan-600 "
                                     }`}
                             />
                         ) : ("")
@@ -204,18 +197,18 @@ export default function Usuario({ usuarios }) {
                                 <div className="p-2">
                                     <form onSubmit={submit} className="flex flex-col space-y-4">
                                         <div>
-                                            <label htmlFor="" className="font-bold">UserName:</label>
-                                            <input type="text" onChange={(e) => setData("username", e.target.value)} className={errors.username && "!ring-red-500"} />
+                                            <label htmlFor="">UserName:</label>
+                                            <input type="text" onChange={(e) => setData("username", e.target.value)} />
                                             {errors.username && <p className="error">{errors.uername}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Email:</label>
+                                            <label htmlFor="">Email:</label>
                                             <input type="email" onChange={(e) => setData("email", e.target.value)} required />
                                             {errors.email && <p className="error">{errors.email}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Tipo:</label>
-                                            <select name="" id="" onChange={(e) => setData("role", e.target.value)} className="bg-white" >
+                                            <label htmlFor="">Tipo:</label>
+                                            <select name="" id="" onChange={(e) => setData("role", e.target.value)} >
                                                 {perfis.map((perfil, key) => (
                                                     <option key={key} value={perfil}>{perfil}</option>
                                                 ))}
@@ -273,17 +266,17 @@ export default function Usuario({ usuarios }) {
                                 <div className="p-2">
                                     <form onSubmit={search} className="flex flex-col space-y-4">
                                         <div>
-                                            <label htmlFor="" className="font-bold">Username:</label>
-                                            <input type="text" onChange={(e) => setS("username", e.target.value)} className={errors.username && "!ring-red-500"} />
+                                            <label htmlFor="" >Username:</label>
+                                            <input type="text" onChange={(e) => setS("username", e.target.value)} />
                                             {errors.username && <p className="error">{errors.username}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Email:</label>
+                                            <label htmlFor="" >Email:</label>
                                             <input type="email" onChange={(e) => setS("email", e.target.value)} />
                                             {errors.email && <p className="error">{errors.email}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Perfil:</label>
+                                            <label htmlFor="" >Perfil:</label>
                                             <select name="" id="" onChange={(e) => setS("role", e.target.value)} className="bg-white" >
                                                 <option value="">Todos</option>
                                                 {perfis.map((perfil, key) => (
@@ -307,7 +300,7 @@ export default function Usuario({ usuarios }) {
                     </Transition.Child>
                 </Dialog>
             </Transition>
-            {/* Modal Para Editar medicos */}
+            {/* Modal Para Editar usuario */}
             <Transition show={edit}>
                 <Dialog onClose={() => setEdit(false)} className="relative z-10">
                     {/* Fundo escuro */}
@@ -342,17 +335,17 @@ export default function Usuario({ usuarios }) {
                                 </div>
                                 <form className="flex flex-col space-y-4 mt-2" onSubmit={update}>
                                     <div>
-                                        <label htmlFor="" className="font-bold">Username:</label>
-                                        <input type="text" value={data.username} onChange={(e) => setData("username", e.target.value)} className={errors.username && "!ring-red-500"} required />
+                                        <label htmlFor="" >Username:</label>
+                                        <input type="text" value={data.username} onChange={(e) => setData("username", e.target.value)} required />
                                         {errors.username && <p className="error">{errors.username}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="" className="font-bold">Email:</label>
+                                        <label htmlFor="" >Email:</label>
                                         <input type="email" value={data.email} onChange={(e) => setData("email", e.target.value)} required />
                                         {errors.email && <p className="error">{errors.email}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="" className="font-bold">Perfil:</label>
+                                        <label htmlFor="" >Perfil:</label>
                                         <select name="" id="" value={data.role} onChange={(e) => setData("role", e.target.value)} className="bg-white" >
                                             {perfis.map((perfil, key) => (
                                                 <option key={key} value={perfil}>{perfil}</option>
@@ -409,45 +402,45 @@ export default function Usuario({ usuarios }) {
                                 </div>
                                 <div className="flex flex-col space-y-2 mt-4 px-3 rounded">
                                     <div className="flex justify-between items-center ">
-                                        <label htmlFor="" className="font-bold">Username</label>
+                                        <label htmlFor="" >Username</label>
                                         <label htmlFor="" className="">{item.username}</label>
                                     </div>
                                     <div className="flex justify-between items-center ">
-                                        <label htmlFor="" className="font-bold">Email</label>
+                                        <label htmlFor="" >Email</label>
                                         <label htmlFor="" className="">{item.email}</label>
                                     </div>
                                     <div className="flex justify-between items-center ">
-                                        <label htmlFor="" className="font-bold">Perfil</label>
+                                        <label htmlFor="" >Perfil</label>
                                         <label htmlFor="" className="">{item.role}</label>
                                     </div>
                                     {(item.role !== 'admin') && (
-                                        <div>
+                                        <div className="space-y-2">
                                             <div className="border"></div>
                                             <div className="flex justify-between items-center ">
-                                                <label htmlFor="" className="font-bold">Nome Completo</label>
+                                                <label htmlFor="" >Nome Completo</label>
                                                 <label htmlFor="" className="">{item.perfil?.dados.nome}</label>
                                             </div>
                                             <div className="flex justify-between items-center ">
-                                                <label htmlFor="" className="font-bold">Contacto</label>
+                                                <label htmlFor="" >Contacto</label>
                                                 <label htmlFor="" className="">{item.perfil?.dados.contacto}</label>
                                             </div>
                                             <div className="flex justify-between items-center ">
-                                                <label htmlFor="" className="font-bold">Morada</label>
+                                                <label htmlFor="" >Morada</label>
                                                 <label htmlFor="" className="">{item.perfil?.dados.morada}</label>
                                             </div>
                                             <div className="flex justify-between items-center ">
-                                                <label htmlFor="" className="font-bold">Gênero</label>
+                                                <label htmlFor="" >Gênero</label>
                                                 <label htmlFor="" className="">{item.perfil?.dados.sexo}</label>
                                             </div>
                                         </div>
                                     )}
 
                                     {item.role === 'medico' && (
-                                        <div>
+                                        <div className="space-y-2">
                                             <div className="border my-2"></div>
 
                                             <div className="flex justify-between items-center">
-                                                <label className="font-bold">Estado</label>
+                                                <label >Estado</label>
                                                 <span
                                                     className={`px-2 py-1 rounded text-sm 
                     ${item.perfil?.dados.estado === "ativo"

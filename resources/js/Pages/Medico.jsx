@@ -108,12 +108,12 @@ export default function Medico({ medicos, especialidades }) {
             <div className="flex items-center space-x-2">
                 {/* <button onClick={() => setOpen(true)} className="flex items-center text-green-400  bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"> <LiaUserPlusSolid className="text-2xl me-1" /> Adicionar </button> */}
 
-                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Filtrar </button>
+                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Pesquisar </button>
             </div>
             <div className="overflow-x-auto rounded-2xl mt-4">
-                <table className="min-w-full border-collapse text-sm text-left">
+                <table>
                     <thead>
-                        <tr className="bg-gray-100 text-gray-700 uppercase text-xs tracking-winder">
+                        <tr>
                             <td>Nº de Ordem</td>
                             <td>Nome</td>
                             <td>Especialidade</td>
@@ -123,15 +123,16 @@ export default function Medico({ medicos, especialidades }) {
                     </thead>
                     <tbody className="text-gray-800">
                         {medicos.data.map((medico) => (
-                            <tr key={medico.id} className={`${medico.id % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-green-50 trasition `}>
+                            <tr key={medico.id}>
                                 <td className="font-bold">{medico.ordem}</td>
                                 <td>{medico.nome}</td>
                                 <td>{medico.especialidade.nome}</td>
-                                <td> <span className={medico.estado === "ativo" ? "bg-green-100 text-green-800 font-bold px-2" : "bg-red-100 text-red-800 font-bold px-2"}>{medico.estado}</span></td>
+                                <td> <span className={medico.estado === "ativo" ? "bg-green-100 text-green-800 font-bold px-4" : "bg-red-100 text-red-800 font-bold px-2"}>{medico.estado}</span></td>
                                 <td className="flex items-center justify-center space-x-2">
-                                    <button onClick={() => showMedico(medico)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500"><LiaEyeSolid className="text-xl" /></button>
-                                    <button onClick={() => editMedico(medico)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
-                                    <button onClick={() => deleteMedico(medico)} className="bg-rose-400 rounded-full p-1  text-white hover:bg-rose-500"><LiaTrashAltSolid className="text-xl" /></button>
+                                    <button onClick={() => showMedico(medico)} className="bg-cyan-400 rounded-full  p-1 text-white hover:bg-cyan-500" title="Detalhes"><LiaEyeSolid className="text-xl" /></button>
+
+                                    {/* <button onClick={() => editMedico(medico)} className="bg-yellow-400 rounded-full p-1  text-white hover:bg-yellow-500"><LiaEditSolid className="text-xl" /></button>
+                                    <button onClick={() => deleteMedico(medico)} className="bg-rose-400 rounded-full p-1  text-white hover:bg-rose-500"><LiaTrashAltSolid className="text-xl" /></button> */}
                                 </td>
                             </tr>
                         ))}
@@ -151,7 +152,7 @@ export default function Medico({ medicos, especialidades }) {
                                     key={link.label}
                                     href={link.url}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
-                                    className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
+                                    className={`px-2 mx-1  rounded-lg border-2 font-sm ${link.active ? "bg-cyan-600 text-white border-cyan-600 " : "text-cyan-600 border-cyan-600 "
                                         }`}
                                 />
                             ) : ("")
@@ -209,7 +210,7 @@ export default function Medico({ medicos, especialidades }) {
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
                                         <div>
-                                            <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                            <label>Nº do BI:</label>
                                             <input type="text" onChange={(e) => setData("bi", e.target.value)} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
                                             {errors.bi && <p className="error">{errors.bi}</p>}
                                         </div>
@@ -292,38 +293,22 @@ export default function Medico({ medicos, especialidades }) {
                             className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between p-3 border-b">
-                                    <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
-                                        <p>Pesquisar medicos</p>
+                                    <DialogTitle className="text-base font-semibold flex items-center space-x-2">
+                                        Pesquisar medicos
                                     </DialogTitle>
-                                    <button onClick={() => setFilter(false)} className="border  rounded"> <LiaTimesSolid className="text-2xl" /> </button>
+                                    <button onClick={() => setFilter(false)} className="border rounded">
+                                        <LiaTimesSolid className="text-2xl" />
+                                    </button>
                                 </div>
                                 <div className="p-2">
                                     <form onSubmit={search} className="flex flex-col space-y-4">
                                         <div>
-                                            <label htmlFor="" className="font-bold">Nº de Ordem:</label>
-                                            <input type="text" onChange={(e) => setData("ordem", e.target.value)} className={errors.ordem && "!ring-red-500"} />
-                                            {errors.ordem && <p className="error">{errors.ordem}</p>}
-                                        </div>
-                                        <div>
-                                            <label className="font-bold" htmlFor="">Nº do BI:</label>
-                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
-                                            {errors.bi && <p className="error">{errors.bi}</p>}
-                                        </div>
-                                        <div>
-                                            <label htmlFor="" className="font-bold">Gênero:</label>
-                                            <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
-                                                <option value=""> -- Selecione -- </option>
-                                                <option value="Masculino">Masculino</option>
-                                                <option value="Feminino">Feminino</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label htmlFor="" className="font-bold">Nome:</label>
-                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} className={errors.nome && "!ring-red-500"} />
+                                            <label>Nome:</label>
+                                            <input type="text" onChange={(e) => setData("nome", e.target.value)} className="bg-white" />
                                             {errors.nome && <p className="error">{errors.nome}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Especialidade:</label>
+                                            <label>Especialidade:</label>
                                             <select name="especialidade_id" id="" onChange={(e) => setData("especialidade_id", e.target.value)} className="bg-white">
                                                 <option value=""> -- Selecione -- </option>
                                                 {especialidades.map((especialidade) => (
@@ -332,13 +317,31 @@ export default function Medico({ medicos, especialidades }) {
                                                 }
                                             </select>
                                         </div>
+                                        <div>
+                                            <label>Nº de Ordem:</label>
+                                            <input type="text" onChange={(e) => setData("ordem", e.target.value)} />
+                                            {errors.ordem && <p className="error">{errors.ordem}</p>}
+                                        </div>
+                                        <div>
+                                            <label>Nº do BI:</label>
+                                            <input type="text" onChange={(e) => setData("bi", e.target.value)} pattern="^\d{9}[A-Z]{2}\d{3}$" />
+                                            {errors.bi && <p className="error">{errors.bi}</p>}
+                                        </div>
+                                        <div>
+                                            <label>Gênero:</label>
+                                            <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
+                                                <option value=""> -- Selecione -- </option>
+                                                <option value="Masculino">Masculino</option>
+                                                <option value="Feminino">Feminino</option>
+                                            </select>
+                                        </div>
                                         {/* <div>
-                                            <label htmlFor="" className="font-bold">Morada:</label>
+                                            <label>Morada:</label>
                                             <input type="text" onChange={(e) => setData("morada", e.target.value)} />
                                             {errors.morada && <p className="error">{errors.morada}</p>}
                                         </div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Contacto:</label>
+                                            <label>Contacto:</label>
                                             <input type="text" onChange={(e) => setData("contacto", e.target.value)} required pattern="9\d{8}" />
                                             {errors.contacto && <p className="error">{errors.contacto}</p>}
                                         </div> */}
@@ -385,19 +388,19 @@ export default function Medico({ medicos, especialidades }) {
                             className="fixed inset-y-0 right-0 w-full max-w-md  bg-white p-6 overflow-y-auto">
                             <div className="flex flex-col">
                                 <div className="flex items-center justify-between space-x-2 p-3 border-b">
-                                    <DialogTitle as="h3" className="text-base font-semibold flex items-center space-x-2">
-                                        <p>Editar dados do medico</p>
+                                    <DialogTitle className="text-base font-semibold flex items-center space-x-2">
+                                        Editar dados do medico
                                     </DialogTitle>
                                     <button onClick={() => setEdit(false)} className="border rounded"> <LiaTimesSolid className="text-2xl" /> </button>
                                 </div>
                                 <form className="flex flex-col space-y-4 mt-2" onSubmit={update}>
                                     <div>
-                                        <label htmlFor="" className="font-bold">Nº de Ordem:</label>
+                                        <label>Nº de Ordem:</label>
                                         <input type="text" onChange={(e) => setData("ordem", e.target.value)} value={data.ordem} className={errors.ordem && "!ring-red-500"} />
                                         {errors.ordem && <p className="error">{errors.ordem}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="" className="font-bold">Nome:</label>
+                                        <label>Nome:</label>
                                         <input type="text" onChange={(e) => setData("nome", e.target.value)} value={data.nome} className={errors.nome && "!ring-red-500"}
                                             required
                                             maxLength={255}
@@ -405,12 +408,12 @@ export default function Medico({ medicos, especialidades }) {
                                         {errors.nome && <p className="error">{errors.nome}</p>}
                                     </div>
                                     <div>
-                                        <label className="font-bold" htmlFor="">Nº do BI:</label>
+                                        <label>Nº do BI:</label>
                                         <input type="text" onChange={(e) => setData("bi", e.target.value)} value={data.bi} required pattern="^\d{9}[A-Z]{2}\d{3}$" />
                                         {errors.bi && <p className="error">{errors.bi}</p>}
                                     </div>
                                     <div>
-                                        <label htmlFor="" className="font-bold">Gênero:</label>
+                                        <label>Gênero:</label>
                                         <select name="sexo" id="sexo" value={data.sexo} onChange={(e) => setData("sexo", e.target.value)} className="bg-white">
                                             <option value=""> -- Selecione -- </option>
                                             <option value="Masculino">Masculino</option>
@@ -419,7 +422,7 @@ export default function Medico({ medicos, especialidades }) {
                                     </div>
                                     <div>
                                         <div>
-                                            <label htmlFor="" className="font-bold">Especialidade:</label>
+                                            <label>Especialidade:</label>
                                             <select name="especialidade_id" id="especialidade_id" value={data.especialidade_id} onChange={(e) => setData("especialidade_id", e.target.value)} className="bg-white">
                                                 <option value=""> -- Selecione -- </option>
                                                 {especialidades.map((especialidade) => (
@@ -428,7 +431,7 @@ export default function Medico({ medicos, especialidades }) {
                                                 }
                                             </select>
                                         </div>
-                                        <label htmlFor="" className="font-bold">Data de Nascimento:</label>
+                                        <label>Data de Nascimento:</label>
                                         <input type="date" onChange={(e) => setData("nascimento", e.target.value)} value={data.nascimento} required
                                             min="1900-01-01"
                                             max="2100-12-31" />

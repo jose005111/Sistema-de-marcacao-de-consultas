@@ -20,7 +20,7 @@ export default function Vagas({ vagas, especialidades }) {
 
     const [open, setOpen] = useState(false);
     const [edit, setEdit] = useState(false);
-    const [show, setShow] = useState(false);
+    // const [show, setShow] = useState(false);
     const [filter, setFilter] = useState(false);
     const [destroyer, setDestroyer] = useState(false);
 
@@ -46,9 +46,7 @@ export default function Vagas({ vagas, especialidades }) {
     }
 
 
-    const [item, setItem] = useState({});
-
-    const { data, setData, post, put, processing, errors, delete: destroy } = useForm({
+    const { data, setData, post, put, get, processing, errors, delete: destroy, reset, clearErrors } = useForm({
         data: "",
         vagas: especialidades.map((e) => ({
             especialidade_id: e.id,
@@ -58,33 +56,55 @@ export default function Vagas({ vagas, especialidades }) {
 
     function openDelete(vaga) {
         setVagaSelecionada(vaga);
+        setShowDetalhes(false);
         setDestroyer(true);
     }
 
     function submit(e) {
         e.preventDefault();
-
         post(route("vagas.store"), {
             onSuccess: () => {
-                setOpen(false);
                 toast.success("Vagas disponibilizadas com sucesso!");
+                setOpen(false);
+                reset();
             },
-            onError: () => toast.error("Erro ao disponibilizar vagas!"),
+            onError: () => {
+                toast.error("Erro ao disponibilizar vagas!")
+            },
+            onFinish: () => {
+
+            }
+
         });
     }
 
-    function updateVaga(index, value) {
-        const newVagas = [...data.vagas];
-        newVagas[index].total_vagas = value;
-        setData("vagas", newVagas);
+    async function openDetalhes(vaga) {
+        try {
+            const response = await axios.get(`/vagas/${vaga.especialidade_id}/detalhes`);
+
+            // Pegamos o nome da especialidade do primeiro registro retornado
+            const nome = response.data.length > 0
+                ? response.data[0].especialidade?.nome
+                : (vaga.especialidade?.nome || "Especialidade");
+
+            setVagaSelecionada({
+                especialidade_id: vaga.especialidade_id, // Guardamos para reuso no edit/delete
+                nomeEspecialidade: nome,
+                datas: response.data
+            });
+
+            setShowDetalhes(true);
+        } catch (error) {
+            toast.error("Erro ao carregar detalhes");
+        }
     }
+
     function destroing(e) {
         e.preventDefault();
-
         destroy(route("vagas.destroy", vagaSelecionada.id), {
             onSuccess: () => {
-                setDestroyer(false);
                 toast.success("Vaga eliminada com sucesso!");
+                openDetalhes({ especialidade_id: vagaSelecionada.especialidade_id });
             },
             onError: (errors) => {
                 // Inertia envia os erros do Laravel na propriedade errors
@@ -93,10 +113,11 @@ export default function Vagas({ vagas, especialidades }) {
                 } else {
                     toast.error("Erro ao adicionar marcação!");
                 }
-
-
-                setDestroyer(false);
             },
+            onFinish: () => {
+                setDestroyer(false);
+                setShowDetalhes(false);
+            }
         });
     }
     function openEdit(vaga) {
@@ -105,6 +126,7 @@ export default function Vagas({ vagas, especialidades }) {
             data: vaga.data,
             total_vagas: vaga.total_vagas,
         });
+        setShowDetalhes(false);
         setEdit(true);
     }
 
@@ -120,8 +142,12 @@ export default function Vagas({ vagas, especialidades }) {
 
             <div className="flex items-center space-x-2">
                 <button
-                    onClick={() => setOpen(true)}
-                    className="flex items-center text-green-400 bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"
+                    onClick={() => {
+                        setData({ data: "", especialidade_id: "" });
+                        setOpen(true);
+                        clearErrors();
+                    }}
+                    className="flex items-center text-green-400 bg-green-100 p-2 hover:bg-green-400 hover:text-green-50 rounded-lg"
                 >
                     <LiaPlusCircleSolid className="text-2xl me-1" />
                     Disponibilizar Vagas
@@ -129,22 +155,22 @@ export default function Vagas({ vagas, especialidades }) {
                 {/* Botão filtro */}
                 <button
                     onClick={() => setFilter(true)}
-                    className="flex items-center text-yellow-400 bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"
+                    className="flex items-center text-yellow-400 bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-yellow-50 rounded-lg"
                 >
-                    <LiaFilterSolid className="text-2xl me-1" /> Filtrar
+                    <LiaFilterSolid className="text-2xl me-1" /> Pesquisar
                 </button>
             </div>
 
             {/* Tabela */}
             <div className="overflow-x-auto rounded-2xl mt-4">
                 <div className="bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100">
-                    <table className="min-w-full text-sm">
-                        <thead className="bg-gradient-to-r from-cyan-50 to-emerald-50 text-xs uppercase text-gray-600">
+                    <table>
+                        <thead>
                             <tr>
-                                <th className="px-6 py-4 text-left">Especialidade</th>
-                                <th className="px-6 py-4 text-center">Vagas</th>
-                                <th className="px-6 py-4 text-center">Estado</th>
-                                <th className="px-6 py-4 text-center">Acções</th>
+                                <th className="text-left">Especialidade</th>
+                                <th className="text-center">Vagas</th>
+                                <th className="text-center">Estado</th>
+                                <th className="text-center">Acções</th>
                             </tr>
                         </thead>
 
@@ -160,11 +186,11 @@ export default function Vagas({ vagas, especialidades }) {
 
                                 return (
                                     <tr key={v.especialidade_id} className="hover:bg-gray-50 transition">
-                                        <td className="px-6 py-2 font-semibold text-gray-700">
+                                        <td>
                                             {v.especialidade?.nome}
                                         </td>
 
-                                        <td className="px-6 py-2 text-center">
+                                        <td className="text-center">
                                             <div className="flex flex-col items-center">
                                                 <span className="font-bold text-gray-700">
                                                     {v.vagas_disponiveis} / {v.total_vagas}
@@ -193,19 +219,19 @@ export default function Vagas({ vagas, especialidades }) {
 
                                         <td className="px-6 py-2 flex justify-center space-x-2">
                                             <button onClick={() => openDetalhes(v)}
-                                                className="bg-cyan-500 hover:bg-cyan-600 text-white p-1 rounded-full transition">
+                                                className="bg-cyan-500 hover:bg-cyan-600 text-white p-1 rounded-full transition" title="Ver detalhes">
                                                 <LiaEyeSolid className="text-xl" />
                                             </button>
 
-                                            <button onClick={() => openEdit(v)}
-                                                className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded-full transition">
+                                            {/* <button onClick={() => openEdit(v)}
+                                                className="bg-yellow-400 hover:bg-yellow-500 text-white p-1 rounded-lg transition" title="Editar vaga">
                                                 <LiaEditSolid className="text-xl" />
                                             </button>
 
                                             <button onClick={() => openDelete(v)}
-                                                className="bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full transition">
+                                                className="bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-lg transition" title="Excluir vaga">
                                                 <LiaTrashAltSolid className="text-xl" />
-                                            </button>
+                                            </button> */}
                                         </td>
                                     </tr>
                                 );
@@ -224,22 +250,25 @@ export default function Vagas({ vagas, especialidades }) {
 
 
                 {/* Paginação */}
-                <div className="flex items-center justify-end pt-3 px-4">
-                    {vagas.links.map((link) =>
-                        link.url ? (
-                            <Link
-                                key={link.label}
-                                href={link.url}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                                className={`px-2 mx-1 ${link.active ? "bg-cyan-600 font-bold text-white border-2 border-cyan-600 rounded-lg " : "text-cyan-600 font-bold border-2 border-cyan-600 rounded-lg "
-                                    }`}
-                            />
-                        ) : ("")
-                    )}
-                </div>
+                {vagas.links && vagas.links.length >= 10 && (
+                    <div className="flex items-center justify-end pt-3 px-4">
+                        {vagas.links.map((link) =>
+                            link.url ? (
+                                <Link
+                                    key={link.label}
+                                    href={link.url}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                    className={`px-2 mx-1  rounded-lg border-2 font-sm ${link.active ? "bg-cyan-600 text-white border-cyan-600 " : "text-cyan-600 border-cyan-600 "
+                                        }`}
+                                />
+                            ) : ("")
+                        )}
+                    </div>
+                )}
+
             </div>
 
-            {/* Modal */}
+            {/* Modal para adicionar vaga */}
             <Transition show={open}>
                 <Dialog onClose={() => setOpen(false)} className="relative z-10">
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
@@ -251,90 +280,142 @@ export default function Vagas({ vagas, especialidades }) {
                             </button>
                         </DialogTitle>
 
-                        <form onSubmit={submit} className="space-y-4">
-                            {/* Data */}
+                        <form onSubmit={submit} className="space-y-6">
+                            {/* 1. Selecionar Especialidade */}
                             <div>
-                                <label className="font-bold">Data</label>
+                                <label>Especialidade</label>
+                                <select
+                                    className={`w-full border rounded-lg p-2.5 bg-gray-50 ${errors.especialidade_id ? 'border-red-500' : 'border-gray-300'}`}
+                                    value={data.especialidade_id}
+                                    onChange={(e) => setData("especialidade_id", e.target.value)}
+                                >
+                                    <option value="">Selecione a especialidade...</option>
+                                    {especialidades.map((esp) => (
+                                        <option key={esp.id} value={esp.id}>
+                                            {esp.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.especialidade_id && <p className="text-red-500 text-sm mt-1">{errors.especialidade_id}</p>}
+                            </div>
+
+                            {/* 2. Selecionar Data */}
+                            <div>
+                                <label>Data disponível</label>
                                 <input
                                     type="date"
+                                    min={new Date().toISOString().split("T")[0]} // Bloqueia visualmente datas passadas
+                                    value={data.data}
                                     onChange={(e) => setData("data", e.target.value)}
-                                    className="w-full border rounded p-2"
+                                    className={`w-full border rounded-lg p-2.5 bg-gray-50 ${errors.data ? 'border-red-500' : 'border-gray-300'}`}
                                 />
-                                {errors.data && <p className="text-red-500">{errors.data}</p>}
+                                {/* O erro de "Data já ocupada" vindo do Back-end aparecerá aqui */}
+                                {errors.data && <p className="text-red-500 text-sm mt-1">{errors.data}</p>}
                             </div>
 
-                            {/* Especialidades */}
-                            <div className="space-y-3">
-                                {especialidades.map((esp, index) => (
-                                    <div key={esp.id} className="flex items-center gap-2">
-                                        <span className="w-1/2 font-semibold">
-                                            {esp.nome}
-                                        </span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            placeholder="Qtd."
-                                            onChange={(e) =>
-                                                updateVaga(index, e.target.value)
-                                            }
-                                            className="w-1/2 border rounded p-2"
-                                        />
-                                    </div>
-                                ))}
-                                {errors.vagas && (
-                                    <p className="text-red-500">{errors.vagas}</p>
-                                )}
+                            {/* 3. Quantidade de Vagas */}
+                            <div>
+                                <label>Quantidade de Vagas</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    placeholder="Ex: 10"
+                                    value={data.total_vagas}
+                                    onChange={(e) => setData("total_vagas", e.target.value)}
+                                    className={`w-full border rounded-lg p-2.5 bg-gray-50 ${errors.total_vagas ? 'border-red-500' : 'border-gray-300'}`}
+                                />
+                                {errors.total_vagas && <p className="text-red-500 text-sm mt-1">{errors.total_vagas}</p>}
                             </div>
 
-                            <button
-                                disabled={processing}
-                                className="w-full min-h-[40px] bg-green-500 hover:bg-green-600 rounded-lg text-white p-1"
-                            >
-                                {processing ? (
-                                    <span className="flex items-center justify-center">
-                                        <Loader />
-                                    </span>
-                                ) : "Salvar"}
-                            </button>
+                            {/* Botão de Submissão */}
+                            <div className="pt-4">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full min-h-[45px] bg-green-600 hover:bg-green-700 rounded-lg text-white transition-all flex items-center justify-center shadow-md"
+                                >
+                                    {processing ? <Loader /> : "Salvar"}
+                                </button>
+                            </div>
                         </form>
                     </DialogPanel>
                 </Dialog>
             </Transition>
 
+            {/* Modal de Filtros */}
             <Transition show={filter}>
                 <Dialog onClose={() => setFilter(false)} className="relative z-10">
+                    {/* Fundo escuro com desfoque */}
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-                    <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6">
-                        <DialogTitle className="font-bold mb-4 border-b pb-2">
+
+                    {/* Painel Lateral Direito */}
+                    <DialogPanel className="fixed inset-y-0 right-0 w-full max-w-md bg-white p-6 overflow-y-auto shadow-xl">
+                        <DialogTitle className="font-bold mb-6 flex justify-between border-b pb-4">
                             Pesquisar Vagas
+                            <button onClick={() => setFilter(false)} className="hover:text-red-500 transition-colors">
+                                <LiaTimesSolid className="text-2xl" />
+                            </button>
                         </DialogTitle>
 
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                get(route("vagas.index"), data);
+                                // Usamos get para enviar os filtros via Query String
+                                get(route("vagas.index"), {
+                                    onSuccess: () => setFilter(false),
+                                });
                             }}
-                            className="space-y-3"
+                            className="space-y-6"
                         >
-                            <input
-                                type="date"
-                                className="border p-2 w-full"
-                                onChange={(e) => setData("data", e.target.value)}
-                            />
+                            {/* Filtro por Especialidade */}
+                            <div>
+                                <label>Especialidade</label>
+                                <select
+                                    className=""
+                                    value={data.especialidade_id}
+                                    onChange={(e) => setData("especialidade_id", e.target.value)}
+                                >
+                                    <option value="">Todas as especialidades</option>
+                                    {especialidades.map((e) => (
+                                        <option key={e.id} value={e.id}>
+                                            {e.nome}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                            <select
-                                className="border p-2 w-full"
-                                onChange={(e) => setData("especialidade_id", e.target.value)}
-                            >
-                                <option value="">Todas</option>
-                                {especialidades.map(e => (
-                                    <option key={e.id} value={e.id}>{e.nome}</option>
-                                ))}
-                            </select>
+                            {/* Filtro por Data */}
+                            <div>
+                                <label>Data Específica</label>
+                                <input
+                                    type="date"
+                                    className="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-50"
+                                    value={data.data}
+                                    onChange={(e) => setData("data", e.target.value)}
+                                />
+                            </div>
 
-                            <button className="bg-yellow-400 text-white w-full p-2 rounded">
-                                Aplicar
-                            </button>
+                            {/* Botões de Ação */}
+                            <div className="pt-4 space-y-2">
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full min-h-[45px] bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white transition-all flex items-center justify-center shadow-md"
+                                >
+                                    {processing ? <Loader /> : "Pesquisar"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setData({ data: "", especialidade_id: "" });
+                                        // Opcional: recarregar a página sem filtros
+                                    }}
+                                    className="w-full p-2 text-gray-500 hover:text-gray-700 text-sm font-semibold transition-colors"
+                                >
+                                    Limpar Filtros
+                                </button>
+                            </div>
                         </form>
                     </DialogPanel>
                 </Dialog>
@@ -358,65 +439,60 @@ export default function Vagas({ vagas, especialidades }) {
                             </button>
                         </DialogTitle>
 
-                        {vagaSelecionada && (
-                            <div className="mt-6 space-y-6">
+                        <div className="border-b">
+                            <h2 className="text-lg font-bold text-gray-600 my-3">
+                                {vagaSelecionada?.nomeEspecialidade}
+                            </h2>
+                            <p className="text-sm text-gray-500">Dias Disponíveis</p>
+                        </div>
+                        {/* Dentro do Modal de Detalhes */}
+                        <div className="space-y-4 mt-4">
+                            {vagaSelecionada?.datas?.map((vagaUnica) => {
+                                const ocupadas = vagaUnica.total_vagas - vagaUnica.vagas_disponiveis;
+                                const percentagem = Math.round((ocupadas / vagaUnica.total_vagas) * 100);
 
-                                <div>
-                                    <h3 className="text-xl font-bold text-cyan-600">
-                                        {vagaSelecionada.especialidade?.nome}
-                                    </h3>
-                                    <p className="text-sm text-gray-400">
-                                        Distribuição por data
-                                    </p>
-                                </div>
-
-                                <div className="space-y-4">
-                                    {vagaSelecionada.datas?.map((item, index) => {
-
-                                        const ocupadas = item.total_vagas - item.vagas_disponiveis;
-                                        const percentagem = Math.round(
-                                            (ocupadas / item.total_vagas) * 100
-                                        );
-
-                                        let corBarra = "bg-green-500";
-                                        if (percentagem >= 70) corBarra = "bg-red-500";
-                                        else if (percentagem >= 40) corBarra = "bg-yellow-500";
-
-                                        return (
-                                            <div
-                                                key={index}
-                                                className="bg-gray-50 p-4 rounded-2xl shadow-sm border border-gray-100"
-                                            >
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <span className="font-semibold text-gray-700">
-                                                        {new Date(item.data).toLocaleDateString()}
-                                                    </span>
-
-                                                    <span className="text-xs text-gray-500">
-                                                        {item.vagas_disponiveis} disponíveis
-                                                    </span>
-                                                </div>
-
-                                                <div className="w-full bg-gray-200 h-3 rounded-full">
-                                                    <div
-                                                        className={`${corBarra} h-3 rounded-full transition-all`}
-                                                        style={{ width: `${percentagem}%` }}
-                                                    />
-                                                </div>
-
-                                                <div className="flex justify-between text-xs mt-2 text-gray-500">
-                                                    <span>Total: {item.total_vagas}</span>
-                                                    <span>Ocupadas: {ocupadas}</span>
-                                                    <span>{percentagem}%</span>
-                                                </div>
+                                return (
+                                    <div key={vagaUnica.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <span className="font-bold text-slate-700 block">
+                                                    {new Date(vagaUnica.data).toLocaleDateString()}
+                                                </span>
+                                                <span className="text-xs text-slate-400">
+                                                    {vagaUnica.vagas_disponiveis} vagas livres de {vagaUnica.total_vagas}
+                                                </span>
                                             </div>
-                                        );
-                                    })}
-                                </div>
 
-                            </div>
-                        )}
+                                            {/* AÇÕES MUDARAM PARA CÁ */}
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => openEdit(vagaUnica)}
+                                                    className="p-1.5 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200"
+                                                    title="Editar Vaga"
+                                                >
+                                                    <LiaEditSolid size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => openDelete(vagaUnica)}
+                                                    className="p-1.5 bg-rose-100 text-rose-600 rounded-lg hover:bg-rose-200"
+                                                    title="Eliminar Vaga"
+                                                >
+                                                    <LiaTrashAltSolid size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
 
+                                        {/* Barra de progresso */}
+                                        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all ${percentagem > 80 ? 'bg-rose-500' : 'bg-cyan-500'}`}
+                                                style={{ width: `${percentagem}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </DialogPanel>
                 </Dialog>
             </Transition>
@@ -424,7 +500,7 @@ export default function Vagas({ vagas, especialidades }) {
 
             {/* Modal de edição de vaga */}
             <Transition show={edit}>
-                <Dialog onClose={() => setEdit(false)} className="relative z-10">
+                <Dialog onClose={() => setEdit(false)} className="relative z-50">
                     {/* Fundo */}
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
@@ -441,12 +517,16 @@ export default function Vagas({ vagas, especialidades }) {
                             <form
                                 onSubmit={(e) => {
                                     e.preventDefault();
+                                    // Usamos o id que veio do vagaSelecionada (preenchido no openEdit)
                                     put(route('vagas.update', vagaSelecionada.id), {
                                         onSuccess: () => {
-                                            setEdit(false);
-                                            toast.success('Vaga atualizada com sucesso!');
+                                            toast.success('Vaga atualizada!');
                                         },
                                         onError: () => toast.error('Erro ao atualizar vaga'),
+                                        onFinish: () => {
+                                            setEdit(false);
+                                            setShowDetalhes(false);
+                                        }
                                     });
                                 }}
                                 className="space-y-4"
@@ -455,7 +535,7 @@ export default function Vagas({ vagas, especialidades }) {
                                 <div>
                                     <label className="font-bold">Especialidade</label>
                                     <input
-                                        value={vagaSelecionada.especialidade?.nome}
+                                        value={vagaSelecionada.especialidade?.nome || "Especialidade"}
                                         disabled
                                         className="w-full bg-gray-100 border rounded p-2"
                                     />
@@ -516,7 +596,7 @@ export default function Vagas({ vagas, especialidades }) {
             </Transition>
 
 
-            <Dialog open={destroyer} onClose={setDestroyer} className="relative z-10">
+            <Dialog open={destroyer} onClose={setDestroyer} className="relative z-50">
                 {/* Fundo escuro */}
                 <Transition.Child
                     enter="transition-opacity ease-out duration-300"
@@ -564,16 +644,13 @@ export default function Vagas({ vagas, especialidades }) {
                                         <p className="text-center my-2">
                                             Tem certeza que deseja eliminar esta vaga?
                                         </p>
-
                                         {vagaSelecionada && (
-                                            <p className="text-center text-sm text-gray-600 my-3">
-                                                {vagaSelecionada.especialidade?.nome} —{" "}
-                                                {new Date(
-                                                    vagaSelecionada.data
-                                                ).toLocaleDateString()}
-                                            </p>
+                                            <div className="bg-gray-50 p-3 rounded text-center">
+                                                <span className="text-sm font-medium">{vagaSelecionada?.especialidade?.nome}</span>
+                                                {" - "}
+                                                <span className="text-sm text-gray-500">{new Date(vagaSelecionada.data).toLocaleDateString()}</span>
+                                            </div>
                                         )}
-
                                         <p className="text-center text-sm text-rose-600 my-3">
                                             Esta ação não pode ser desfeita.
                                         </p>

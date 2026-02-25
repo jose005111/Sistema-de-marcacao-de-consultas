@@ -102,7 +102,7 @@ export default function Paciente({ pacientes }) {
             <div className="flex items-center space-x-2">
                 <button onClick={() => setOpen(true)} className="flex items-center text-green-400  bg-green-100 p-2 hover:bg-green-400 hover:text-white rounded-lg"> <LiaUserPlusSolid className="text-2xl me-1" /> Adicionar </button>
 
-                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Filtrar </button>
+                <button onClick={() => setFilter(true)} className="flex items-center text-yellow-400  bg-yellow-100 p-2 hover:bg-yellow-400 hover:text-white rounded-lg"> <LiaFilterSolid className="text-2xl me-1" /> Pesquisar </button>
             </div>
             <div className="overflow-x-auto rounded-2xl mt-4">
                 <table className="min-w-full border-collapse text-sm text-left">
@@ -145,7 +145,7 @@ export default function Paciente({ pacientes }) {
                                     key={link.label}
                                     href={link.url}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
-                                    className={`px-2 mx-1 rounded-lg border-cyan-600 font-bold border-2  ${link.active ? "bg-cyan-600 text-white" : "text-cyan-600 "
+                                    className={`px-2 mx-1  rounded-lg border-2 font-sm ${link.active ? "bg-cyan-600 text-white border-cyan-600 " : "text-cyan-600 border-cyan-600 "
                                         }`}
                                 />
                             ) : ("")

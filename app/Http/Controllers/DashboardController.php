@@ -19,8 +19,9 @@ class DashboardController extends Controller
     $user = auth()->user();
     $role = $user->role;
 
-    $mesSelecionado = $request->get('mes', now()->format('m'));
-    $anoSelecionado = $request->get('ano', now()->format('Y'));
+    // Garante que mes e ano venham como inteiros e com fallback para o atual
+    $mesSelecionado = (int) $request->get('mes', now()->month);
+    $anoSelecionado = (int) $request->get('ano', now()->year);
     $filtro = $request->get('filtro', null);
 
     $data = [
@@ -29,7 +30,7 @@ class DashboardController extends Controller
         'role' => $role,
     ];
 
-    if ($role === 'admin') {
+   if ($role === 'admin') {
         $data += [
             'totalMedicos' => Medico::count(),
             'totalUsuarios' => User::count(),
@@ -37,31 +38,38 @@ class DashboardController extends Controller
             'totalPacientes' => Paciente::count(),
         ];
 
-       $filtro = $request->get('filtro', null);
-
-        // Apenas atualiza especialidades se filtro for 'especialidades' ou nenhum filtro
+        // Melhoria na busca por Especialidades
         if ($filtro === 'especialidades' || !$filtro) {
-           
-            $distribuicaoEspecialidades = Marcacao::select( 'especialidades.nome as label', DB::raw('COUNT(marcacoes.id) as value') ) ->join('especialidades', 'marcacoes.especialidade_id', '=', 'especialidades.id') ->join('vagas', 'vagas.especialidade_id', '=', 'especialidades.id') ->whereMonth('vagas.data', $mesSelecionado) ->whereYear('vagas.data', $anoSelecionado) ->groupBy('especialidades.nome') ->orderBy('especialidades.nome') ->get() ->map(function ($item) { return [ 'id' => $item->label, 'label' => $item->label, 'value' => $item->value, ]; }); 
-
-
-            $data['distribuicaoEspecialidades'] = $distribuicaoEspecialidades;
+            $data['distribuicaoEspecialidades'] = Marcacao::query()
+                ->join('especialidades', 'marcacoes.especialidade_id', '=', 'especialidades.id')
+                ->join('vagas', 'marcacoes.vaga_id', '=', 'vagas.id') // Join direto pela vaga da marcação
+                ->whereMonth('vagas.data', $mesSelecionado)
+                ->whereYear('vagas.data', $anoSelecionado)
+                ->select('especialidades.nome as label', DB::raw('COUNT(marcacoes.id) as value'))
+                ->groupBy('especialidades.nome')
+                ->get()
+                ->map(fn($item) => [
+                    'id' => $item->label,
+                    'label' => $item->label,
+                    'value' => (int) $item->value,
+                ]);
         }
 
-        // Apenas atualiza consultas por dia se filtro for 'consultas' ou nenhum filtro
+        // Consultas por dia (Admin)
         if ($filtro === 'consultas' || !$filtro) {
-             $consultasPorDia = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id') 
-             ->select( DB::raw('DAY(vagas.data) as dia'), DB::raw('COUNT(marcacoes.id) as total') ) 
-             ->whereMonth('vagas.data', $mesSelecionado) ->whereYear('vagas.data', $anoSelecionado)
-             ->groupBy(DB::raw('DAY(vagas.data)')) ->orderBy(DB::raw('DAY(vagas.data)')) 
-             ->get() ->map(function ($item) { 
-                return [ 'dia' => (int) $item->dia, 'total' => (int) $item->total, ]; 
-            });
-
-            $data['consultasPorDia'] = $consultasPorDia;
+            $data['consultasPorDia'] = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id')
+                ->whereMonth('vagas.data', $mesSelecionado)
+                ->whereYear('vagas.data', $anoSelecionado)
+                ->select(DB::raw('DAY(vagas.data) as dia'), DB::raw('COUNT(marcacoes.id) as total'))
+                ->groupBy(DB::raw('DAY(vagas.data)'))
+                ->get()
+                ->map(fn($item) => [
+                    'dia' => (int) $item->dia,
+                    'total' => (int) $item->total,
+                ]);
         }
-
     }
+    
 
     elseif ($role === 'medico') {
         $medicoId = $user->medico->id;
@@ -79,15 +87,19 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
+          // Consultas por dia (Admin)
         if ($filtro === 'consultas' || !$filtro) {
-            $data['consultasPorDia'] = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id') 
-             ->select( DB::raw('DAY(vagas.data) as dia'), DB::raw('COUNT(marcacoes.id) as total') ) 
+            $data['consultasPorDia'] = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id')
+                ->whereMonth('vagas.data', $mesSelecionado)
+                ->whereYear('vagas.data', $anoSelecionado)
                 ->where('marcacoes.medico_id', $medicoId)
-             ->whereMonth('vagas.data', $mesSelecionado) ->whereYear('vagas.data', $anoSelecionado)
-             ->groupBy(DB::raw('DAY(vagas.data)')) ->orderBy(DB::raw('DAY(vagas.data)')) 
-             ->get() ->map(function ($item) { 
-                return [ 'dia' => (int) $item->dia, 'total' => (int) $item->total, ]; 
-            });
+                ->select(DB::raw('DAY(vagas.data) as dia'), DB::raw('COUNT(marcacoes.id) as total'))
+                ->groupBy(DB::raw('DAY(vagas.data)'))
+                ->get()
+                ->map(fn($item) => [
+                    'dia' => (int) $item->dia,
+                    'total' => (int) $item->total,
+                ]);
         }
     }
 
@@ -108,26 +120,35 @@ class DashboardController extends Controller
                 ]),
         ];
 
+        // Melhoria na busca por Especialidades
         if ($filtro === 'especialidades' || !$filtro) {
-            $data['distribuicaoEspecialidades'] = Marcacao::select(
-                'especialidade_id as especialidade',
-                DB::raw('count(*) as total')
-            )
-            ->groupBy('especialidade')
-            ->get()
-            ->map(fn($m) => ['id' => $m->especialidade, 'value' => $m->total]);
+            $data['distribuicaoEspecialidades'] = Marcacao::query()
+                ->join('especialidades', 'marcacoes.especialidade_id', '=', 'especialidades.id')
+                ->join('vagas', 'marcacoes.vaga_id', '=', 'vagas.id') // Join direto pela vaga da marcação
+                ->whereMonth('vagas.data', $mesSelecionado)
+                ->whereYear('vagas.data', $anoSelecionado)
+                ->select('especialidades.nome as label', DB::raw('COUNT(marcacoes.id) as value'))
+                ->groupBy('especialidades.nome')
+                ->get()
+                ->map(fn($item) => [
+                    'id' => $item->label,
+                    'label' => $item->label,
+                    'value' => (int) $item->value,
+                ]);
         }
 
-         if ($filtro === 'consultas' || !$filtro) {
-             $consultasPorDia = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id') 
-             ->select( DB::raw('DAY(vagas.data) as dia'), DB::raw('COUNT(marcacoes.id) as total') ) 
-             ->whereMonth('vagas.data', $mesSelecionado) ->whereYear('vagas.data', $anoSelecionado)
-             ->groupBy(DB::raw('DAY(vagas.data)')) ->orderBy(DB::raw('DAY(vagas.data)')) 
-             ->get() ->map(function ($item) { 
-                return [ 'dia' => (int) $item->dia, 'total' => (int) $item->total, ]; 
-            });
-
-            $data['consultasPorDia'] = $consultasPorDia;
+        // Consultas por dia (Admin)
+        if ($filtro === 'consultas' || !$filtro) {
+            $data['consultasPorDia'] = Marcacao::join('vagas', 'vagas.id', '=', 'marcacoes.vaga_id')
+                ->whereMonth('vagas.data', $mesSelecionado)
+                ->whereYear('vagas.data', $anoSelecionado)
+                ->select(DB::raw('DAY(vagas.data) as dia'), DB::raw('COUNT(marcacoes.id) as total'))
+                ->groupBy(DB::raw('DAY(vagas.data)'))
+                ->get()
+                ->map(fn($item) => [
+                    'dia' => (int) $item->dia,
+                    'total' => (int) $item->total,
+                ]);
         }
     }
 
