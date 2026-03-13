@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EspecialidadeController;
 use App\Http\Controllers\MarcacaoController;
 use App\Http\Controllers\MedicoController;
+use App\Http\Controllers\MensagemController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\RecepcionistaController;
 use App\Http\Controllers\RegisterController;
@@ -100,6 +101,14 @@ Route::get('/marcacoes/{marcacao}/imprimir',
 Route::patch('/marcacoes/{marcacao}/realizada', [MarcacaoController::class, 'marcarRealizada'])
     ->name('marcacoes.realizada');
 
+
+Route::middleware(['auth'])->group(function () {
+    // Rota para abrir a view do chat/mensagens
+    Route::get('/mensagens', [MensagemController::class, 'index'])->name('mensagens.index');
+    
+    // Rota para enviar a mensagem
+    Route::post('/mensagens', [MensagemController::class, 'store'])->name('mensagens.store');
+});
 
 
 });

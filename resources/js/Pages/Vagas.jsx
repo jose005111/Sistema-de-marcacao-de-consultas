@@ -677,9 +677,6 @@ export default function Vagas({ vagas, especialidades }) {
                     </div>
                 </Transition.Child>
             </Dialog>
-
-
-
         </div>
     );
 }

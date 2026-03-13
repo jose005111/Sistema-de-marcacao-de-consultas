@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Mensagem;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -45,6 +46,9 @@ class HandleInertiaRequests extends Middleware
             'user' => $request->user()
                 ? $request->user()->load(['medico', 'paciente', 'recepcionista'])
                 : null,
+                'unread_mensagens' => $request->user() 
+                ? Mensagem::where('destinatario_id', $request->user()->id)->whereNull('lida_em')->count() 
+                : 0,
             'can' => $request->user() ? [
                 'viewUsuarios'        => $request->user()->can('viewAny', \App\Models\User::class),
                 'viewPacientes'       => $request->user()->can('viewAny', \App\Models\Paciente::class),
